@@ -6,16 +6,20 @@ for use with [suited](https://github.com/norm/suited).
 
 ## macOS account setup
 
-???
+Create the usual `glen` account and sign in to iCloud
 
 ## Software installation and environment customisation
 
-Generate
+Generate some SSH Keys and then add them to the keychain ssh agent
+```
+ssh-keygen -t ed25519 -a 100 -C `hostname`
+ssh-keygen -t rsa -b 4096 -a 100 -C `hostname`
+ssh-add -K
+```
 
 Explicitly sign into the Mac App Store application: Store → Sign In…
 
 Run suited:
-
 ```
 curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
 bash suited.sh github:glenjamin/suit:initial_setup.conf
