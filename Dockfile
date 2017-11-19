@@ -17,10 +17,12 @@ remove Launchpad
 remove 'App Store'
 remove 'System Preferences'
 remove Notes
+remove Calendar
 
 add Firefox after Finder
 add iTerm after Firefox
 add Atom after iTerm
+add Calendar after Atom
 add 'Google Chrome' after Atom
 
 # add /Applications/Utilities/Terminal.app    after Siri         Terminal
