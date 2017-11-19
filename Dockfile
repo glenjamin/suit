@@ -1,9 +1,27 @@
+remove Siri
+remove Safari
+remove Mail
+remove Photos
+remove Messages
+remove FaceTime
+remove FaceTime
+remove Pages
+remove Numbers
+remove Keynote
 remove Contacts
 remove Maps
 remove Reminders
 remove iBooks
 remove iTunes
 remove Launchpad
+remove 'App Store'
+remove 'System Preferences'
+remove Notes
+
+add Firefox after Finder
+add iTerm after Firefox
+add Atom after iTerm
+add 'Google Chrome' after Atom
 
 # add /Applications/Utilities/Terminal.app    after Siri         Terminal
 # add Things                                  after Terminal

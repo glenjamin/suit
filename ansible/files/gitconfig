@@ -1,0 +1,62 @@
+[push]
+default = current
+followTags = true
+
+[status]
+
+[merge]
+ff = false
+
+[diff]
+renames = copy
+
+[log]
+date = relative
+decorate = short
+
+[pretty]
+line = %C(yellow)%h %Cblue%ad %Cgreen%aN%Creset %s
+
+[interactive]
+singlekey = true
+
+[color]
+ui = auto
+status = auto
+branch = auto
+interactive = auto
+diff = auto
+
+[alias]
+s = status
+ci = commit
+co = checkout
+a = add -Av
+tip = log -n1
+di = diff HEAD
+du = diff @{u}...
+lu = log @{u}.. --reverse
+ds = diff --staged
+ru = reset --hard @{u}
+pu = -c 'merge.ff=true' pull
+unstage = reset HEAD --
+temp = !git commit -m 'temp' --no-verify
+untemp = reset HEAD^
+g = grep -n
+not = log HEAD --not
+new = log @{u} --not HEAD --reverse
+serve = !git daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
+
+[user]
+name = Glen Mailer
+email = glen@stainlessed.co.uk
+
+[github]
+user = glenjamin
+
+[core]
+excludesfile = /Users/glen/.gitignore_global
+[rebase]
+autosquash = true
+[rerere]
+enabled = true

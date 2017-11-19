@@ -1,0 +1,5 @@
+sudo ansible-playbook \
+  -i localhost, \
+  -c local \
+  --extra-vars "user=$USER" \
+  stuff.yml

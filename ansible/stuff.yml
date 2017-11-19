@@ -1,0 +1,32 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: enable touchid pam
+    lineinfile:
+      path: /etc/pam.d/sudo
+      line: auth  sufficient  pam_tid.so
+      insertbefore: smartcard
+  - name: symlink homebrew bash completion into etc
+    file:
+      src: /usr/local/etc/bash_completion
+      path: /etc/bash_completion
+      state: link
+      owner: "{{user}}"
+  - name: symlink gitconfig
+    file:
+      src: "{{playbook_dir}}/files/gitconfig"
+      path: "~{{user}}/.gitconfig"
+      state: link
+      owner: "{{user}}"
+  - name: symlink bash setup
+    file:
+      src: "{{playbook_dir}}/files/bash-setup"
+      path: "~{{user}}/.bash-setup"
+      state: link
+      owner: "{{user}}"
+  - name: setup bash profile
+    template:
+      src: files/profile.j2
+      dest: "~{{user}}/.profile"
+      owner: "{{user}}"
