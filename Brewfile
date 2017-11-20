@@ -15,6 +15,7 @@ cask 'google-backup-and-sync'
 cask 'iterm2'
 cask 'dropbox'
 cask 'bettertouchtool'
+cask 'caffeine'
 
 mas 'Slack', id: 803453959
 mas 'LastPass Password Manager', id: 926036361
