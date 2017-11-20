@@ -50,21 +50,19 @@ fi
 if [ -n "$CUSTOM_HOSTNAME" ]; then
     prompt_host="$CUSTOM_HOSTNAME"
 else
-    prompt_host="$(hostname)"
+    prompt_host="$(hostname -s)"
 fi
 
 if [ "$color_prompt" = yes ]; then
-    if [ -n "$ID_COLOUR" ]; then
-	   c_host="\[\033$ID_COLOUR\]"
-    elif [ -n "$HOST_COLOUR" ]; then
-	   c_host="\[\033$HOST_COLOUR\]"
+    if [ -n "$HOST_COLOUR" ]; then
+	      c_host="\[\033$HOST_COLOUR\]"
     else
-	   c_host="\[\033[01;32m\]"
+	      c_host="\[\033[01;36m\]"
     fi
     if [[ $EUID -ne 0 ]]; then
-	   c_id="\[\033[01;32m\]"
+	      c_id="\[\033[01;32m\]"
     else
-	   c_id="\[\033[01;31m\]"
+	      c_id="\[\033[01;31m\]"
     fi
     c_path="\[\033[01;34m\]"
     c_vcs="\[\033[01;33m\]"
@@ -82,12 +80,7 @@ export PROMPT_COMMAND=__prompt_command
 function __prompt_command() {
     local EXIT="$?"
 
-    if [ -n "$CUSTOM_HOSTNAME" ]; then
-        local host="$CUSTOM_HOSTNAME"
-    else
-        local host="$(hostname)"
-    fi
-    echo -ne "\033]0;$host: $(basename `pwd`)\007"
+    echo -ne "\033]0;$prompt_host: $(basename `pwd`)\007"
 
     local c_red="\[\033[01;31m\]"
     local c_gray="\[\033[01;30m\]"
