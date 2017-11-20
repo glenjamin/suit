@@ -21,7 +21,7 @@
       owner: "{{user}}"
   - name: symlink bash setup
     file:
-      src: "{{playbook_dir}}/files/bash-setup"
+      src: "{{playbook_dir}}/files/bash-setup.sh"
       path: "~{{user}}/.bash-setup"
       state: link
       owner: "{{user}}"
