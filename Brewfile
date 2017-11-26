@@ -4,6 +4,8 @@ brew 'terminal-notifier'
 brew 'terraform'
 brew 'n'
 brew 'bash-completion'
+brew 'azure-cli'
+brew 'yarn'
 
 cask 'firefox'
 cask 'google-chrome'
