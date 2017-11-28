@@ -1,0 +1,14 @@
+Include config.d/*
+
+ServerAliveInterval 180
+ServerAliveCountMax 9999999999
+
+Host localhost
+  ControlMaster no
+  ControlPath none
+  ControlPersist no
+
+Host *
+  ControlMaster auto
+  ControlPath /tmp/%r@%h:%p
+  ControlPersist yes

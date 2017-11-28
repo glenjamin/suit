@@ -19,6 +19,22 @@
       path: "~{{user}}/.gitconfig"
       state: link
       owner: "{{user}}"
+  - name: make ssh dir
+    file:
+      path: "~{{user}}/.ssh"
+      state: directory
+      owner: "{{user}}"
+  - name: make ssh config.d dir
+    file:
+      path: "~{{user}}/.ssh/config.d"
+      state: directory
+      owner: "{{user}}"
+  - name: symlink ssh config
+    file:
+      src: "{{playbook_dir}}/files/sshconfig"
+      path: "~{{user}}/.ssh/config"
+      state: link
+      owner: "{{user}}"
   - name: symlink bash setup
     file:
       src: "{{playbook_dir}}/files/bash-setup.sh"
