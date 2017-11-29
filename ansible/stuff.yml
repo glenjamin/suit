@@ -46,3 +46,14 @@
       src: files/profile.j2
       dest: "~{{user}}/.profile"
       owner: "{{user}}"
+  - name: create yarn global directory
+    file:
+      path: "~{{user}}/.config/yarn/global"
+      state: directory
+      owner: "{{user}}"
+  - name: symlink yarn global package.json
+    file:
+      src: "{{playbook_dir}}/files/yarn-global.package.json"
+      dest: "~{{user}}/.config/yarn/global/package.json"
+      state: link
+      owner: "{{user}}"
