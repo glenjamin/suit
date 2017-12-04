@@ -7,6 +7,8 @@ brew 'bash-completion'
 brew 'azure-cli'
 brew 'yarn'
 brew 'pwgen'
+brew 'certbot'
+brew 'git-cola'
 
 cask 'firefox'
 cask 'google-chrome'
@@ -19,6 +21,7 @@ cask 'iterm2'
 cask 'dropbox'
 cask 'bettertouchtool'
 cask 'keepingyouawake'
+cask 'powershell'
 
 mas 'Slack', id: 803453959
 mas 'LastPass Password Manager', id: 926036361
