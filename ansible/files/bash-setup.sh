@@ -146,7 +146,7 @@ pgk() {
 # export everything from a .env file into current shell
 dotenv() {
     local file="${1:-.env}"
-    eval $(cat $file | sed 's/^/export /')
+    eval $(cat $file | egrep -v '^#|^\s*$' | sed 's/^/export /')
 }
 
 showcert() {
