@@ -9,6 +9,7 @@ brew 'yarn'
 brew 'pwgen'
 brew 'certbot'
 brew 'git-cola'
+brew 'jq'
 
 cask 'firefox'
 cask 'google-chrome'
@@ -22,6 +23,8 @@ cask 'dropbox'
 cask 'bettertouchtool'
 cask 'keepingyouawake'
 cask 'powershell'
+cask 'coconutbattery'
+cask 'microsoft-azure-storage-explorer'
 
 mas 'Slack', id: 803453959
 mas 'LastPass Password Manager', id: 926036361
