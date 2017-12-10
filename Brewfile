@@ -25,6 +25,8 @@ cask 'keepingyouawake'
 cask 'powershell'
 cask 'coconutbattery'
 cask 'microsoft-azure-storage-explorer'
+cask 'vagrant'
+cask 'virtualbox'
 
 mas 'Slack', id: 803453959
 mas 'LastPass Password Manager', id: 926036361
