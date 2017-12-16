@@ -10,6 +10,7 @@ brew 'pwgen'
 brew 'terminal-notifier'
 brew 'terraform'
 brew 'yarn'
+brew 'wget'
 
 cask 'atom'
 cask 'bettertouchtool'
