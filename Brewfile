@@ -13,6 +13,7 @@ brew 'yarn'
 brew 'wget'
 
 cask 'atom'
+cask 'avast-security'
 cask 'bettertouchtool'
 cask 'coconutbattery'
 cask 'dash'
