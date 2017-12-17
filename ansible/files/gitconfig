@@ -60,3 +60,5 @@ excludesfile = /Users/glen/.gitignore_global
 autosquash = true
 [rerere]
 enabled = true
+[cola]
+	spellcheck = false

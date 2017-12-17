@@ -1,0 +1,31 @@
+- name: create /etc/resolver
+  file:
+    path: /etc/resolver
+    mode: 0755
+    state: directory
+
+- name: direct dns to local
+  copy:
+    dest: /etc/resolver/{{ item }}
+    content: nameserver 127.0.0.1
+  with_items:
+    - localhost
+    - box.test
+
+- name: configure dnsmasq
+  copy:
+    dest: /usr/local/etc/dnsmasq.conf
+    content: |
+      listen-address=127.0.0.1
+      {% for suffix, address in addresses.items() %}
+      address=/{{suffix}}/{{address}}
+      {% endfor %}
+  vars:
+    addresses:
+      localhost: 127.0.0.1
+      box.test: 192.168.19.2
+
+- name: ensure dnsmasq started
+  command: brew services start dnsmasq
+  register: brew_service_result
+  changed_when: "'Successfully started' in brew_service_result.stdout"
