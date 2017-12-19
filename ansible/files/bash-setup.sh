@@ -150,7 +150,8 @@ dotenv() {
 }
 
 showcert() {
-    openssl s_client -servername $1 -showcerts -connect $1:443 \
+    echo "" | \
+        openssl s_client -servername $1 -showcerts -connect $1:443 \
         | openssl x509 -inform pem -noout -text
 }
 
