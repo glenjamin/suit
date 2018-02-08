@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "kuduexec": "^0.1.6",
     "nodemon": "^1.12.1",
     "prettier": "^1.9.1"
   }
