@@ -64,3 +64,14 @@
       owner: "{{user}}"
 
   - include_tasks: dns.yml
+
+  - name: install circleci CLI
+    shell: |
+      curl -o /usr/local/bin/circleci \
+        https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci
+    args:
+      creates: /usr/local/bin/circleci
+  - name: set circleci bin mode
+    file:
+      path: /usr/local/bin/circleci
+      mode: 0755
