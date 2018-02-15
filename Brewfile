@@ -20,6 +20,7 @@ brew 'terminal-notifier'
 brew 'terraform'
 brew 'wget'
 brew 'yarn'
+brew 'youtube-dl'
 
 cask 'atom'
 cask 'avast-security'
