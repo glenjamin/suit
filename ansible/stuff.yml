@@ -65,6 +65,12 @@
 
   - include_tasks: dns.yml
 
+  - name: install pip stuff
+    pip:
+      name: "{{item}}"
+    with_items:
+      - jmespath-terminal
+
   - name: install circleci CLI
     shell: |
       curl -o /usr/local/bin/circleci \
