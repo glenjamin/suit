@@ -66,11 +66,15 @@
   - include_tasks: dns.yml
 
   - name: install pip stuff
+    become_user: "{{user}}"
     pip:
+      executable: pip3
       name: "{{item}}"
     with_items:
       - jmespath-terminal
       - autopep8
+      - twine
+      - pypandoc
 
   - name: install circleci CLI
     shell: |
