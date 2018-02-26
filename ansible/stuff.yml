@@ -70,6 +70,7 @@
       name: "{{item}}"
     with_items:
       - jmespath-terminal
+      - autopep8
 
   - name: install circleci CLI
     shell: |
