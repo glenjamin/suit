@@ -47,6 +47,7 @@ cask 'sqlpro-for-mssql'
 cask 'steam'
 cask 'vagrant'
 cask 'virtualbox'
+cask 'visual-studio-code'
 cask 'vlc'
 
 mas 'LastPass Password Manager', id: 926036361
