@@ -75,8 +75,6 @@ else
 fi
 unset color_prompt c_host c_id c_path c_vcs c_reset git
 
-export PROMPT_COMMAND=__prompt_command
-
 function __prompt_command() {
     local EXIT="$?"
 
@@ -93,6 +91,12 @@ function __prompt_command() {
     fi
     PS1+="\n> "
 }
+
+# Ensure subshells can inherit this prompt command
+export -f __prompt_command
+export prompt_host PS_SPEC
+
+export PROMPT_COMMAND=__prompt_command
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in

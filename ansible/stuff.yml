@@ -39,16 +39,17 @@
       state: link
       owner: "{{user}}"
 
-  - name: symlink bash setup
-    file:
-      src: "{{playbook_dir}}/files/bash-setup.sh"
-      path: "~{{user}}/.bash-setup"
-      state: link
-      owner: "{{user}}"
   - name: setup bash profile
-    template:
-      src: files/profile.j2
+    copy:
+      content: |
+        source {{playbook_dir}}/files/bash-setup.sh
       dest: "~{{user}}/.profile"
+      owner: "{{user}}"
+  - name: setup bashrc to ensure __git_ps1 works in subshells
+    copy:
+      content: |
+        source /usr/local/etc/bash_completion.d/git-prompt.sh
+      dest: "~{{user}}/.bashrc"
       owner: "{{user}}"
 
   - name: create yarn global directory
