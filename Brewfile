@@ -1,7 +1,10 @@
+brew 'aws-elasticbeanstalk'
+brew 'awscli'
 brew 'azure-cli'
 brew 'bash-completion'
 brew 'certbot'
 brew 'colordiff'
+brew 'ffmpeg'
 brew 'git-cola'
 brew 'git'
 brew 'gpg'
@@ -20,6 +23,7 @@ brew 'https://gist.githubusercontent.com/lalyos/28b35c29d4f8d2c1f293/raw/sshpass
 brew 'telnet'
 brew 'terminal-notifier'
 brew 'terraform'
+brew 'terraform_landscape'
 brew 'wget'
 brew 'yarn'
 brew 'youtube-dl'
@@ -35,6 +39,7 @@ cask 'dropbox'
 cask 'firefox'
 cask 'google-backup-and-sync'
 cask 'google-chrome'
+cask 'growlnotify'
 cask 'iterm2'
 cask 'keepingyouawake'
 cask 'keybase'
@@ -54,3 +59,4 @@ cask 'vlc'
 mas 'LastPass Password Manager', id: 926036361
 mas 'Microsoft Remote Desktop 8.0', id: 715768417
 mas 'Slack', id: 803453959
+mas 'Growl', id: 467939042
