@@ -5,6 +5,7 @@
     "foreman": "^2.0.0",
     "kuduexec": "^0.1.6",
     "nodemon": "^1.12.1",
-    "prettier": "^1.9.1"
+    "prettier": "^1.9.1",
+    "webpack-bundle-analyzer": "^2.11.1"
   }
 }
