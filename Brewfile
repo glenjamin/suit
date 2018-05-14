@@ -1,3 +1,4 @@
+brew 'ag'
 brew 'aws-elasticbeanstalk'
 brew 'awscli'
 brew 'azure-cli'
@@ -30,6 +31,9 @@ brew 'terraform_landscape'
 brew 'wget'
 brew 'yarn', ignore_dependencies: true
 brew 'youtube-dl'
+
+tap 'mike-engel/jwt-cli'
+brew 'jwt-cli'
 
 cask 'atom'
 cask 'authy'
@@ -66,3 +70,4 @@ mas 'LastPass Password Manager', id: 926036361
 mas 'Microsoft Remote Desktop 8.0', id: 715768417
 mas 'Slack', id: 803453959
 mas 'Growl', id: 467939042
+mas 'HP Easy Scan', id: 967004861
