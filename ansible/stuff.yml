@@ -76,6 +76,7 @@
       - autopep8
       - twine
       - pypandoc
+      - awslogs
 
   - name: install circleci CLI
     shell: |

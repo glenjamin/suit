@@ -1,4 +1,5 @@
 brew 'ag'
+brew 'ansifilter'
 brew 'aws-elasticbeanstalk'
 brew 'awscli'
 brew 'azure-cli'
