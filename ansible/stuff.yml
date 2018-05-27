@@ -66,6 +66,13 @@
 
   - include_tasks: dns.yml
 
+  - name: install ruby stuff
+    gem:
+      user_install: no
+      name: "{{item}}"
+    with_items:
+      - bundler
+
   - name: install pip stuff
     become_user: "{{user}}"
     pip:
