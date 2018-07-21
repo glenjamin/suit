@@ -70,6 +70,7 @@
     gem:
       user_install: no
       name: "{{item}}"
+      state: latest
     with_items:
       - bundler
 
@@ -84,6 +85,7 @@
       - twine
       - pypandoc
       - awslogs
+      - csvs-to-sqlite
 
   - name: install circleci CLI
     shell: |
