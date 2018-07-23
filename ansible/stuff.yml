@@ -85,15 +85,17 @@
       - twine
       - pypandoc
       - awslogs
-      - csvs-to-sqlite
 
   - name: install circleci CLI
-    shell: |
-      curl -o /usr/local/bin/circleci \
-        https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci
-    args:
-      creates: /usr/local/bin/circleci
-  - name: set circleci bin mode
-    file:
-      path: /usr/local/bin/circleci
+    get_url:
+      url: https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci
+      url_username: anon
+      dest: /usr/local/bin/circleci
+      mode: 0755
+
+  - name: install lectl
+    get_url:
+      url: https://raw.githubusercontent.com/sahsanu/lectl/36bbc26a605f80737048c92a5e6479a29e6f50d1/lectl
+      url_username: anon
+      dest: /usr/local/bin/lectl
       mode: 0755

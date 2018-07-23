@@ -1,2 +1,4 @@
 brew 'ansible'
+brew 'coreutils'
 brew 'dnsmasq'
+brew 'gnu-sed'
