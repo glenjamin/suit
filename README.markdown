@@ -34,3 +34,14 @@ Run suited again, now installed to `/usr/local/bin`:
 # set up the mac with my stuff
 suited github:glenjamin/suit:main.conf
 ```
+
+
+## Troubleshooting
+
+Using the Node.js binary with `n` has code signing issues.
+
+See https://github.com/tj/n/issues/394#issuecomment-386807868 for the workaround
+
+```
+sudo codesign --force --sign - /usr/local/bin/node
+```
