@@ -18,6 +18,7 @@ remove 'App Store'
 remove 'System Preferences'
 remove Notes
 remove Calendar
+remove News
 
 add Firefox after Finder
 add iTerm after Firefox
@@ -25,8 +26,3 @@ add Atom after iTerm
 add Calendar after Atom
 add 'Google Chrome' after Atom
 
-# add /Applications/Utilities/Terminal.app    after Siri         Terminal
-# add Things                                  after Terminal
-# add nvALT                                   after Things
-# add 'Sublime Text'                          after nvALT
-# add GitX

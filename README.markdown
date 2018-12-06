@@ -13,7 +13,6 @@ Create the usual `glen` account and sign in to iCloud
 Generate some SSH Keys and then add them to the keychain ssh agent
 ```
 ssh-keygen -t ed25519 -a 100 -C `hostname`
-ssh-keygen -t rsa -b 4096 -a 100 -C `hostname`
 ssh-add -K
 ```
 
