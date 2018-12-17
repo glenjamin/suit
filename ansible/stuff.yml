@@ -43,6 +43,9 @@
     copy:
       content: |
         source {{playbook_dir}}/files/bash-setup.sh
+        if [ -f "$HOME/.cargo/env" ]; then
+          source $HOME/.cargo/env
+        fi
       dest: "~{{user}}/.profile"
       owner: "{{user}}"
   - name: setup bashrc to ensure __git_ps1 works in subshells

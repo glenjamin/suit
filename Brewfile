@@ -28,6 +28,7 @@ brew 'putty'
 brew 'pwgen'
 brew 'redis'
 brew 'ruby'
+brew 'rustup'
 brew File.expand_path('./setup/sshpass.rb', __dir__)
 brew 'telnet'
 brew 'terminal-notifier'
