@@ -17,6 +17,14 @@
       force: yes
       state: link
 
+  - name: enable locate searching
+    become: yes
+    command: launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
+    args:
+      creates: /var/db/locate.database
+    register: enable_locate_result
+    changed_when: "'service already loaded' not in enable_locate_result.stderr"
+
   - name: symlink gitconfig
     file:
       src: "{{playbook_dir}}/files/gitconfig"
