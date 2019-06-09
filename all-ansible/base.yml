@@ -1,0 +1,58 @@
+---
+- hosts: all
+  tasks:
+
+  - name: enable touchid pam
+    become: yes
+    lineinfile:
+      path: /etc/pam.d/sudo
+      line: auth  sufficient  pam_tid.so
+      insertbefore: smartcard
+
+  - name: symlink homebrew bash completion into etc
+    become: yes
+    file:
+      src: /usr/local/etc/bash_completion
+      path: /etc/bash_completion
+      force: yes
+      state: link
+
+  - name: symlink gitconfig
+    file:
+      src: "{{playbook_dir}}/files/gitconfig"
+      path: "{{ ansible_user_dir }}/.gitconfig"
+      state: link
+  - name: create global gitignore
+    file:
+      src: "{{playbook_dir}}/files/gitignore"
+      path: "{{ ansible_user_dir }}/.gitignore_global"
+      state: link
+
+  - name: make ssh dir
+    file:
+      path: "{{ ansible_user_dir }}/.ssh"
+      state: directory
+  - name: make ssh config.d dir
+    file:
+      path: "{{ ansible_user_dir }}/.ssh/config.d"
+      state: directory
+  - name: symlink ssh config
+    file:
+      src: "{{playbook_dir}}/files/sshconfig"
+      path: "{{ ansible_user_dir }}/.ssh/config"
+      state: link
+
+  - name: setup bash profile
+    copy:
+      content: |
+        export CUSTOM_HOSTNAME=circle
+        source {{playbook_dir}}/files/bash-setup.sh
+        if [ -f "$HOME/.cargo/env" ]; then
+          source $HOME/.cargo/env
+        fi
+      dest: "{{ ansible_user_dir }}/.profile"
+  - name: setup bashrc to ensure __git_ps1 works in subshells
+    copy:
+      content: |
+        source /usr/local/etc/bash_completion.d/git-prompt.sh
+      dest: "{{ ansible_user_dir }}/.bashrc"

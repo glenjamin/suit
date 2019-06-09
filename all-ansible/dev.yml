@@ -1,0 +1,26 @@
+---
+- hosts: all
+  tasks:
+
+  - name: create dev dirs
+    file:
+      state: directory
+      path: "{{ item }}"
+    with_items:
+      - "{{ ansible_user_dir}}/Development"
+      - "{{ ansible_user_dir }}/Development/GitHub"
+
+  - homebrew:
+      pkg:
+        - git
+
+  - homebrew_cask:
+      pkg:
+        - authy
+        - lastpass
+        - keepingyouawake
+        - moom
+        - visual-studio-code
+        - docker
+        - firefox
+        - iterm2

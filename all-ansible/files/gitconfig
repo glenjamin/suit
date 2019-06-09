@@ -55,10 +55,10 @@ email = glen@stainlessed.co.uk
 user = glenjamin
 
 [core]
-excludesfile = /Users/glen/.gitignore_global
+excludesfile = ~/.gitignore_global
 [rebase]
 autosquash = true
 [rerere]
 enabled = true
 [cola]
-	spellcheck = false
+spellcheck = false
