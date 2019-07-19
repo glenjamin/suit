@@ -1,0 +1,55 @@
+---
+- hosts: all
+  tasks:
+  - name: NSGlobalDomain defaults
+    osx_defaults:
+      domain: NSGlobalDomain
+      key: "{{ item.key }}"
+      type: "{{ item.type }}"
+      value: "{{ item.value }}"
+      state: present
+    with_items:
+      - key: AppleLocale
+        type: string
+        value: en_GB
+      - key: AppleLanguages
+        type: array
+        value: ["en-GB"]
+      - key: AppleKeyboardUIMode
+        type: int
+        value: 3
+      - key: com.apple.swipescrolldirection
+        type: bool
+        value: false
+
+  - osx_defaults:
+      domain: com.apple.dock
+      key: "{{ item.key }}"
+      type: "{{ item.type }}"
+      value: "{{ item.value }}"
+      state: present
+    with_items:
+      - key: autohide
+        type: bool
+        value: true
+      - key: magnification
+        type: bool
+        value: false
+      - key: autohide-delay
+        type: float
+        value: 0
+      - key: orientation
+        type: string
+        value: left
+      - key: tilesize
+        type: int
+        value: 40
+      - key: showAppExposeGestureEnabled
+        type: bool
+        value: true
+    notify:
+      - killall dock
+  handlers:
+    - name: killall dock
+      command: killall Dock
+

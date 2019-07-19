@@ -13,14 +13,30 @@
   - homebrew:
       pkg:
         - git
+        - git-cola
+        - mas
+        - awscli
+        - jq
+        - tfenv
 
   - homebrew_cask:
       pkg:
         - authy
-        - lastpass
-        - keepingyouawake
-        - moom
-        - visual-studio-code
+        - bettertouchtool
+        - dash
         - docker
+        - dropbox
         - firefox
         - iterm2
+        - keepingyouawake
+        - moom
+        - slack
+        - visual-studio-code
+        - zoomus
+
+  - include_role:
+      name: geerlingguy.mas
+    vars:
+      mas_installed_apps:
+        - { id: 926036361, name: "LastPass Password Manager" }
+        - { id: 803453959, name: "Slack" }

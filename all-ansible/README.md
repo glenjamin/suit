@@ -1,3 +1,13 @@
+# Usage
+
+```
+ansible-galaxy install -r requirements.yml
+```
+
+```
+ ansible-playbook -v foo.yml
+```
+
 # TODO
 
 Bootstrap guide
