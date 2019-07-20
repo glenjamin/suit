@@ -12,27 +12,36 @@
 
   - homebrew:
       pkg:
+        - ag
+        - awscli
+        - bash-completion
         - git
         - git-cola
-        - mas
-        - awscli
         - jq
+        - leiningen
+        - mas
+        - n
         - tfenv
+
+  - homebrew_tap:
+      name: adoptopenjdk/openjdk
 
   - homebrew_cask:
       pkg:
+        - adoptopenjdk8
         - authy
         - bettertouchtool
         - dash
         - docker
         - dropbox
         - firefox
+        - google-chrome
         - iterm2
         - keepingyouawake
         - moom
-        - slack
         - visual-studio-code
         - zoomus
+        - google-backup-and-sync
 
   - include_role:
       name: geerlingguy.mas
