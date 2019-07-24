@@ -49,7 +49,7 @@ serve = !git daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
 
 [user]
 name = Glen Mailer
-email = glen@stainlessed.co.uk
+email = glen@circleci.com
 
 [github]
 user = glenjamin

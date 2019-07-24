@@ -15,13 +15,16 @@
         - ag
         - awscli
         - bash-completion
+        - circleci
         - git
         - git-cola
         - jq
         - leiningen
         - mas
         - n
+        - repo
         - tfenv
+        - go
 
   - homebrew_tap:
       name: adoptopenjdk/openjdk
@@ -36,6 +39,7 @@
         - dropbox
         - firefox
         - google-chrome
+        - irccloud
         - iterm2
         - keepingyouawake
         - moom
