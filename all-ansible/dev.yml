@@ -18,13 +18,14 @@
         - circleci
         - git
         - git-cola
+        - go
         - jq
         - leiningen
         - mas
         - n
         - repo
         - tfenv
-        - go
+        - wget
 
   - homebrew_tap:
       name: adoptopenjdk/openjdk
