@@ -54,3 +54,4 @@
       mas_installed_apps:
         - { id: 926036361, name: "LastPass Password Manager" }
         - { id: 803453959, name: "Slack" }
+        - { id: 414554506, name: "Clocks" }
