@@ -40,12 +40,13 @@ ds = diff --staged
 ru = reset --hard @{u}
 pu = -c 'merge.ff=true' pull
 unstage = reset HEAD --
-temp = !git commit -m 'temp' --no-verify
+temp = commit -m 'temp' --no-verify
 untemp = reset HEAD^
 g = grep -n
 not = log HEAD --not
 new = log @{u} --not HEAD --reverse
 serve = !git daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
+amend = commit --amend --no-edit
 
 [user]
 name = Glen Mailer
