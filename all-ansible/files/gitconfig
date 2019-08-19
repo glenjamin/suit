@@ -38,7 +38,7 @@ du = diff @{u}...
 lu = log @{u}.. --reverse
 ds = diff --staged
 ru = reset --hard @{u}
-pu = -c 'merge.ff=true' pull
+pu = -c 'merge.ff=true' pull --prune
 unstage = reset HEAD --
 temp = commit -m 'temp' --no-verify
 untemp = reset HEAD^
@@ -47,6 +47,8 @@ not = log HEAD --not
 new = log @{u} --not HEAD --reverse
 serve = !git daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
 amend = commit --amend --no-edit
+force = -c 'push.default=current' push --force-with-lease
+circleci = !git a && git amend && git force
 
 [user]
 name = Glen Mailer

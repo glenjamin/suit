@@ -17,6 +17,9 @@
         - bash-completion
         - circleci
         - cloc
+        - clojure
+        - docker-completion
+        - docker-compose-completion
         - git
         - git-cola
         - go
@@ -24,8 +27,8 @@
         - leiningen
         - mas
         - n
-        - pipenv
         - repo
+        - shellcheck
         - tfenv
         - wget
 
@@ -43,6 +46,7 @@
         - dropbox
         - firefox
         - google-chrome
+        - google-cloud-sdk
         - irccloud
         - iterm2
         - keepingyouawake
@@ -50,6 +54,11 @@
         - visual-studio-code
         - zoomus
         - google-backup-and-sync
+
+  - pip:
+      executable: pip3
+      name:
+        - pipenv==2018.10.13
 
   - include_role:
       name: geerlingguy.mas
