@@ -30,6 +30,7 @@
         - repo
         - shellcheck
         - tfenv
+        - watch
         - wget
 
   - homebrew_tap:
@@ -51,6 +52,7 @@
         - iterm2
         - keepingyouawake
         - moom
+        - sqlpro-studio
         - visual-studio-code
         - zoomus
         - google-backup-and-sync

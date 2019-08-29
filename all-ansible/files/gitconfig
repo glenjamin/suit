@@ -65,3 +65,5 @@ autosquash = true
 enabled = true
 [cola]
 spellcheck = false
+[url "git@github.com"]
+	insteadOf = https://github.com
