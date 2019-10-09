@@ -62,6 +62,11 @@
       name:
         - pipenv==2018.10.13
 
+  - npm:
+      global: yes
+      name: nodemon
+      state: latest
+
   - include_role:
       name: geerlingguy.mas
     vars:
