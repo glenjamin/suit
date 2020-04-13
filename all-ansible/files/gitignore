@@ -1,2 +1,5 @@
 .DS_Store
 .vscode/
+.env
+.clj-kondo
+.idea/

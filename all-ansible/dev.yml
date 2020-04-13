@@ -30,6 +30,7 @@
         - n
         - repo
         - shellcheck
+        - siege
         - terminal-notifier
         - tfenv
         - watch
