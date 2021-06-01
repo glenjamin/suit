@@ -32,8 +32,8 @@
     notify:
       - killall dock
 
-  - homebrew:
-      pkg:
+  - community.general.homebrew:
+      name:
         - dockutil
 
   - include_role:
@@ -51,7 +51,7 @@
           path: /Applications/Visual Studio Code.app
           pos: 3
         - name: Calendar
-          path: /Applications/Calendar.app
+          path: /System/Applications/Calendar.app
           pos: 4
         - name: Slack
           path: /Applications/Slack.app
@@ -66,7 +66,7 @@
           path: /Applications/zoom.us.app
           pos: 8
         - name: Notes
-          path: /Applications/Notes.app
+          path: /System/Applications/Notes.app
           pos: 9
 
   handlers:

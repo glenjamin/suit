@@ -32,4 +32,46 @@
     with_items:
       - key: Clicking # Tap to click
         type: int
-        value: true
+        value: 1
+
+  - name: com.apple.AppleMultitouchTrackpad defaults
+    osx_defaults:
+      domain: com.apple.AppleMultitouchTrackpad
+      key: "{{ item.key }}"
+      type: "{{ item.type }}"
+      value: "{{ item.value }}"
+      state: present
+    with_items:
+      - key: Clicking # Tap to click
+        type: int
+        value: 1
+
+  - name: Apple Global Domain defaults
+    osx_defaults:
+      domain: "Apple Global Domain"
+      key: "{{ item.key }}"
+      type: "{{ item.type }}"
+      value: "{{ item.value }}"
+      state: present
+    with_items:
+      - key: NSAutomaticCapitalizationEnabled
+        type: int
+        value: 0
+      - key: NSAutomaticDashSubstitutionEnabled
+        type: int
+        value: 0
+      - key: NSAutomaticPeriodSubstitutionEnabled
+        type: int
+        value: 0
+      - key: NSAutomaticQuoteSubstitutionEnabled
+        type: int
+        value: 0
+      - key: NSAutomaticSpellingCorrectionEnabled
+        type: int
+        value: 0
+      - key: NSAutomaticTextCompletionEnabled
+        type: int
+        value: 0
+      - key: WebAutomaticSpellingCorrectionEnabled
+        type: int
+        value: 0

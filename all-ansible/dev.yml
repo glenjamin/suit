@@ -10,73 +10,73 @@
       - "{{ ansible_user_dir}}/Development"
       - "{{ ansible_user_dir }}/Development/GitHub"
 
-  - homebrew:
-      pkg:
+  - community.general.homebrew:
+      name:
         - ag
         - awscli
         - bash-completion
         - circleci
         - cloc
-        - clojure
+#        - clojure
         - docker-completion
         - docker-compose-completion
         - git
         - git-cola
-        - go
+#        - go
         - gpg2
         - jq
-        - leiningen
+#        - leiningen
         - mas
-        - n
-        - repo
+#        - n
+#        - repo
         - shellcheck
-        - siege
+#        - siege
         - terminal-notifier
-        - tfenv
+#        - tfenv
         - watch
         - wget
 
-  - homebrew_tap:
-      name: adoptopenjdk/openjdk
+#  - homebrew_tap:
+#      name: adoptopenjdk/openjdk
 
-  - homebrew_tap:
-      name: heroku/brew
+#  - homebrew_tap:
+#      name: heroku/brew
 
-  - homebrew:
-      pkg:
-        - heroku
+#  - homebrew:
+#      pkg:
+#        - heroku
 
-  - homebrew_cask:
-      pkg:
-        - adoptopenjdk8
+  - community.general.homebrew_cask:
+      name:
+#        - adoptopenjdk8
         - authy
         - aws-vault
         - bettertouchtool
-        - chromedriver
+#        - chromedriver
         - dash
         - docker
-        - dropbox
+#        - dropbox
         - firefox
         - google-chrome
-        - google-cloud-sdk
+#        - google-cloud-sdk
         - irccloud
         - iterm2
         - keepingyouawake
         - moom
-        - sqlpro-studio
+#        - sqlpro-studio
         - visual-studio-code
-        - zoomus
-        - google-backup-and-sync
+        - zoom
+#        - google-backup-and-sync
 
-  - pip:
-      executable: pip3
-      name:
-        - pipenv==2018.10.13
+#  - pip:
+#      executable: pip3
+#      name:
+#        - pipenv==2018.10.13
 
-  - npm:
-      global: yes
-      name: nodemon
-      state: latest
+#  - npm:
+#      global: yes
+#      name: nodemon
+#      state: latest
 
   - include_role:
       name: geerlingguy.mas
