@@ -1,0 +1,9 @@
+---
+- hosts: all
+  tasks:
+  
+  - community.general.homebrew_cask:
+      name:
+        - virtualbox
+        - virtualbox-extension-pack
+        - vagrant

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - community.general.homebrew_cask:
+      name:
+        - goland

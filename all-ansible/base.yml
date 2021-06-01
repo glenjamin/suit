@@ -71,14 +71,17 @@
       name: glen
       shell: /usr/local/bin/bash
 
+  - name: prep for multiple bash profile overrides
+    file:
+      path: "{{ ansible_user_dir }}/.profile.d"
+      state: directory
   - name: setup bash profile
     copy:
       content: |
-        export CUSTOM_HOSTNAME=gecko
-        source {{playbook_dir}}/files/bash-setup.sh
-        if [ -f "$HOME/.cargo/env" ]; then
-          source $HOME/.cargo/env
-        fi
+        for file in {{ ansible_user_dir }}/.profile.d/*.sh; do
+          source $file
+        done
+        source {{ playbook_dir }}/files/bash-setup.sh
       dest: "{{ ansible_user_dir }}/.profile"
   - name: setup bashrc to ensure __git_ps1 works in subshells
     copy:

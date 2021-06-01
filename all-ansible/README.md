@@ -5,7 +5,7 @@ ansible-galaxy install -r requirements.yml
 ```
 
 ```
- ansible-playbook -v foo.yml
+ansible-playbook -v foo.yml
 ```
 
 # Bootstrap
@@ -36,13 +36,16 @@ Install homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
+# Order of playbooks
+
+- base (use -K)
+- defaults
+- apps
+- dock
+- dev
+
+Then any specific tech more targetted ones
+
 # TODO
 
-Playbooks: split into focus areas
-- base
-- dev
-- apps
-- python3
-- clojure
-- golang
-- nodejs
+Playbooks: split into focus areas, eg python3, clojure, golang, nodejs

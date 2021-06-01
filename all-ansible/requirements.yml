@@ -4,6 +4,8 @@ roles:
   version: 1.2.0
 - src: fubarhouse.macdock
   version: 2.3.0
+- src: markosamuli.asdf
+  version: v1.1.0
 
 collections:
 - name: community.general

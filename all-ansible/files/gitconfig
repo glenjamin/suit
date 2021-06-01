@@ -52,7 +52,7 @@ circleci = !git a && git amend && git force
 
 [user]
 name = Glen Mailer
-email = glen@circleci.com
+email = glen@geckoboard.com
 
 [github]
 user = glenjamin

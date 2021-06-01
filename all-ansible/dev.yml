@@ -13,75 +13,41 @@
   - community.general.homebrew:
       name:
         - ag
+        - asdf
         - awscli
         - bash-completion
         - circleci
         - cloc
-#        - clojure
+        - coreutils
         - docker-completion
         - docker-compose-completion
         - git
         - git-cola
-#        - go
         - gpg2
         - jq
-#        - leiningen
-        - mas
-#        - n
-#        - repo
         - shellcheck
-#        - siege
-        - terminal-notifier
-#        - tfenv
         - watch
         - wget
 
-#  - homebrew_tap:
-#      name: adoptopenjdk/openjdk
-
-#  - homebrew_tap:
-#      name: heroku/brew
-
-#  - homebrew:
-#      pkg:
-#        - heroku
-
   - community.general.homebrew_cask:
       name:
-#        - adoptopenjdk8
-        - authy
         - aws-vault
-        - bettertouchtool
-#        - chromedriver
-        - dash
         - docker
-#        - dropbox
-        - firefox
-        - google-chrome
-#        - google-cloud-sdk
-        - irccloud
-        - iterm2
-        - keepingyouawake
-        - moom
 #        - sqlpro-studio
-        - visual-studio-code
-        - zoom
-#        - google-backup-and-sync
-
-#  - pip:
-#      executable: pip3
-#      name:
-#        - pipenv==2018.10.13
-
-#  - npm:
-#      global: yes
-#      name: nodemon
-#      state: latest
 
   - include_role:
-      name: geerlingguy.mas
+      name: markosamuli.asdf
     vars:
-      mas_installed_apps:
-        - { id: 926036361, name: "LastPass Password Manager" }
-        - { id: 803453959, name: "Slack" }
-        - { id: 414554506, name: "Clocks" }
+      asdf_version: v0.8.1
+      asdf_init_shell: false
+      asdf_plugins:
+        - name: golang
+          global: 1.16.4
+          versions:
+            - 1.16.4
+
+  - copy:
+      dest: "{{ ansible_user_dir }}/.profile.d/asdf.sh"
+      content: |
+        source $HOME/.asdf/asdf.sh
+        source $HOME/.asdf/completions/asdf.bash
