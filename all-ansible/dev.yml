@@ -33,7 +33,8 @@
       name:
         - aws-vault
         - docker
-#        - sqlpro-studio
+        - tuple
+        - sqlpro-studio
 
   - include_role:
       name: markosamuli.asdf
