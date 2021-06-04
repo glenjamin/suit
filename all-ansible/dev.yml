@@ -23,6 +23,7 @@
         - docker-compose-completion
         - git
         - git-cola
+        - gnu-tar
         - gpg2
         - jq
         - shellcheck
@@ -34,6 +35,11 @@
         - aws-vault
         - docker
         - tuple
+
+  - community.general.gem:
+      name: fpm
+      user_install: no
+    become: yes
 
   - include_role:
       name: markosamuli.asdf
