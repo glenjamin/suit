@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - community.general.npm:
+      name: yarn
+      global: yes

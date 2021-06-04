@@ -16,6 +16,7 @@
         - asdf
         - awscli
         - bash-completion
+        - bat
         - circleci
         - cloc
         - coreutils
@@ -51,6 +52,11 @@
           global: 1.16.4
           versions:
             - 1.16.4
+        - name: nodejs
+          global: lts
+          versions:
+            - lts
+    tags: asdf
 
   - copy:
       dest: "{{ ansible_user_dir }}/.profile.d/asdf.sh"
