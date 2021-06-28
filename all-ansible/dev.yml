@@ -34,6 +34,7 @@
   - community.general.homebrew_cask:
       name:
         - aws-vault
+        - cyberduck
         - docker
         - tuple
 
@@ -56,6 +57,10 @@
           global: lts
           versions:
             - lts
+        - name: ruby
+          global: 2.7.3
+          versions:
+            - 2.7.3
     tags: asdf
 
   - copy:
