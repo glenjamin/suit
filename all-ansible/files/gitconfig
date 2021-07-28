@@ -6,6 +6,7 @@ followTags = true
 
 [merge]
 ff = false
+	conflictStyle = diff3
 
 [diff]
 renames = copy
@@ -67,3 +68,5 @@ enabled = true
 spellcheck = false
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[pull]
+	ff = only
