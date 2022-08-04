@@ -20,6 +20,7 @@ line = %C(yellow)%h %Cblue%ad %Cgreen%aN%Creset %s
 
 [interactive]
 singlekey = true
+diffFilter = delta --color-only --features=interactive
 
 [color]
 ui = auto
@@ -60,6 +61,8 @@ user = glenjamin
 
 [core]
 excludesfile = ~/.gitignore_global
+	trustctime = false
+pager=delta
 [rebase]
 autosquash = true
 [rerere]
@@ -70,3 +73,19 @@ spellcheck = false
 	insteadOf = https://github.com/
 [pull]
 	ff = only
+
+
+[delta]
+    features = decorations
+
+[delta "interactive"]
+    keep-plus-minus-markers = false
+
+[delta "decorations"]
+    commit-decoration-style = blue ol
+    commit-style = raw
+    file-style = omit
+    hunk-header-decoration-style = blue box
+    hunk-header-file-style = red
+    hunk-header-line-number-style = "#067a00"
+    hunk-header-style = file line-number syntax
