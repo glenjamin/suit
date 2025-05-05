@@ -4,29 +4,21 @@
 
   - community.general.homebrew:
       name:
-        - mas
         - terminal-notifier
 
   - community.general.homebrew_cask:
       name:
         - 1password
-        - authy
+        # - authy
         - bettertouchtool
         - dash
         - firefox
         - google-chrome
-        - irccloud
+#        - irccloud
         - iterm2
         - keepingyouawake
         - meetingbar
         - moom
+        - slack
         - visual-studio-code
         - zoom
-
-  - include_role:
-      name: geerlingguy.mas
-    vars:
-      mas_installed_apps:
-        - { id: 926036361, name: "LastPass Password Manager" }
-        - { id: 803453959, name: "Slack" }
-        - { id: 414554506, name: "Clocks" }

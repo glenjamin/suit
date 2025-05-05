@@ -39,6 +39,7 @@
   - include_role:
       name: fubarhouse.macdock
     vars:
+      dockutil_install_path: /opt/homebrew/bin/dockutil
       dockitems_remove_all: true
       dockitems_enabled:
         - name: Firefox

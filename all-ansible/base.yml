@@ -4,22 +4,20 @@
 
   # Required to make TouchID sudo work in iTerm
   # https://github.com/fabianishere/pam_reattach
-  - homebrew:
-      pkg: fabianishere/personal/pam_reattach
+  # - homebrew:
+  #    pkg: fabianishere/personal/pam_reattach
 
   - name: enable touchid pam
     become: yes
-    blockinfile:
-      path: /etc/pam.d/sudo
-      block: |
-        auth  optional    pam_reattach.so
+    copy:
+      dest: /etc/pam.d/sudo_local
+      content: |
         auth  sufficient  pam_tid.so
-      insertbefore: smartcard
 
   - name: symlink homebrew bash completion into etc
     become: yes
     file:
-      src: /usr/local/etc/bash_completion
+      src: /opt/homebrew/etc/bash_completion
       path: /etc/bash_completion
       force: yes
       state: link
@@ -64,12 +62,12 @@
     become: yes
     lineinfile:
       path: /etc/shells
-      line: /usr/local/bin/bash
+      line: /opt/homebrew/bin/bash
   - name: switch shell to bash
     become: yes
     user:
       name: glen
-      shell: /usr/local/bin/bash
+      shell: /opt/homebrew/bin/bash
 
   - name: prep for multiple bash profile overrides
     file:
@@ -86,5 +84,5 @@
   - name: setup bashrc to ensure __git_ps1 works in subshells
     copy:
       content: |
-        source /usr/local/etc/bash_completion.d/git-prompt.sh
+        source /opt/homebrew/etc/bash_completion.d/git-prompt.sh
       dest: "{{ ansible_user_dir }}/.bashrc"

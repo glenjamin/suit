@@ -10,6 +10,7 @@ ff = false
 
 [diff]
 renames = copy
+algorithm = histogram
 
 [log]
 date = relative
@@ -73,7 +74,8 @@ spellcheck = false
 	insteadOf = https://github.com/
 [pull]
 	ff = only
-
+[init]
+    defaultBranch = main
 
 [delta]
     features = decorations

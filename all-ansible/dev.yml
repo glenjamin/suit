@@ -12,8 +12,7 @@
 
   - community.general.homebrew:
       name:
-        - ag
-        - asdf
+        # - asdf TODO: mise setup
         - awscli
         - bash-completion
         - bat
@@ -25,8 +24,8 @@
         - git
         - git-cola
         - gnu-tar
-        - gpg2
         - jq
+        - ripgrep
         - shellcheck
         - watch
         - wget
@@ -35,6 +34,7 @@
       name:
         - aws-vault
         - cyberduck
+        - goland
         - docker
         - tuple
 
@@ -43,28 +43,28 @@
       user_install: no
     become: yes
 
-  - include_role:
-      name: markosamuli.asdf
-    vars:
-      asdf_version: v0.8.1
-      asdf_init_shell: false
-      asdf_plugins:
-        - name: golang
-          global: 1.16.4
-          versions:
-            - 1.16.4
-        - name: nodejs
-          global: lts
-          versions:
-            - lts
-        - name: ruby
-          global: 2.7.3
-          versions:
-            - 2.7.3
-    tags: asdf
+  # - include_role:
+  #     name: markosamuli.asdf
+  #   vars:
+  #     asdf_version: v0.8.1
+  #     asdf_init_shell: false
+  #     asdf_plugins:
+  #       - name: golang
+  #         global: 1.16.4
+  #         versions:
+  #           - 1.16.4
+  #       - name: nodejs
+  #         global: lts
+  #         versions:
+  #           - lts
+  #       - name: ruby
+  #         global: 2.7.3
+  #         versions:
+  #           - 2.7.3
+  #   tags: asdf
 
-  - copy:
-      dest: "{{ ansible_user_dir }}/.profile.d/asdf.sh"
-      content: |
-        source $HOME/.asdf/asdf.sh
-        source $HOME/.asdf/completions/asdf.bash
+  # - copy:
+  #     dest: "{{ ansible_user_dir }}/.profile.d/asdf.sh"
+  #     content: |
+  #       source $HOME/.asdf/asdf.sh
+  #       source $HOME/.asdf/completions/asdf.bash
