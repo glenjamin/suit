@@ -2,15 +2,18 @@
 
 function fish_prompt --description 'Informative prompt'
 	#Save the return status of the previous command
-	set -l last_pipestatus $pipestatus
-	set -lx __fish_last_status $status # Export for __fish_print_pipestatus.
+	set last_pipestatus $pipestatus
+	set -x __fish_last_status $status # Export for __fish_print_pipestatus.
     
-    set -l user_color --bold green
+    set user_color --bold green
     if functions -q fish_is_root_user; and fish_is_root_user
-        set -l user_color --bold red
+        set user_color --bold red
     end
-    set -l host_color --bold cyan
-    # TODO: custom colour for vagrant
+    if set -q PROMPT_HOST_COLOR
+        set host_color $PROMPT_HOST_COLOR
+    else
+        set host_color --bold cyan
+    end
 
     echo \n(set_color brblack)(date '+%a %-d %b %H:%M:%S')
 
