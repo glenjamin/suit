@@ -37,7 +37,9 @@
     "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins.",
     "excludedCommands": [
       "gh *",
-      "circleci *"
+      "circleci *",
+      "terraform *",
+      "git fetch *"
     ],
     "filesystem": {
       "allowWrite": [
