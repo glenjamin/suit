@@ -1,0 +1,8 @@
+- Don't edit `package.json` by hand for dependency changes, use `npm` cli commands
+- Don't summarise what changed in the body of commit messages, instead provide the why only if it adds something (max 80 char lines)
+- Never commit directly to master, always make a branch first
+- Don't git push or open PRs, I'll do that - except when using the "conveyor" workflow
+- Don't reply to github review comments
+- Define helpers at the bottom of files, so the most relevant code is nearer the top
+- `mise` is used to manage ruby/go/node versions
+- Geckoboard code is usually checked out under ~/Development/Geckoboard/

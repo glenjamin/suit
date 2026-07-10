@@ -1,0 +1,21 @@
+---
+- hosts: all
+  tasks:
+
+  - name: make claude config dir
+    file:
+      path: "{{ ansible_user_dir }}/.claude"
+      state: directory
+  - name: symlink claude config
+    file:
+      src: "{{playbook_dir}}/files/claude/{{ item }}"
+      path: "{{ ansible_user_dir }}/.claude/{{ item }}"
+      state: link
+      force: yes
+    loop:
+      - CLAUDE.md
+      - settings.json
+      - keybindings.json
+      - skills
+      - commands
+      - scripts

@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm test:*)",
+      "Bash(npm t:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(make vendor)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git grep:*)",
+      "Bash(gh pr-feedback:*)"
+    ],
+    "defaultMode": "auto"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/context-bar.sh"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowUnixSockets": [
+        "/private/tmp/claude/*"
+      ],
+      "allowLocalBinding": true
+    }
+  },
+  "skipAutoPermissionPrompt": true,
+  "showClearContextOnPlanAccept": true,
+  "attribution": {
+    "sessionUrl": false
+  }
+}
