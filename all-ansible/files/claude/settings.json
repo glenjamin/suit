@@ -32,6 +32,10 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "excludedCommands": [
+      "gh *",
+      "circleci *"
+    ],
     "filesystem": {
       "allowWrite": [
         "~/Library/Caches/go-build",
