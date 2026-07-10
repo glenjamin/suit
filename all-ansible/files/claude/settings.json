@@ -15,6 +15,7 @@
       "Bash(git log:*)",
       "Bash(git add:*)",
       "Bash(git grep:*)",
+      "Bash(git fetch:*)",
       "Bash(gh pr-feedback:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
