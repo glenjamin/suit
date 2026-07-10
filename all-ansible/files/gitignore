@@ -3,3 +3,7 @@
 .env
 .clj-kondo
 .idea/
+**/.claude/*.local*
+**/.claude/worktrees
+
+**/.claude/.cc-writes/

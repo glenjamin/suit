@@ -40,7 +40,7 @@ di = diff HEAD
 du = diff @{u}...
 lu = log @{u}.. --reverse
 ds = diff --staged
-ru = reset --hard @{u}
+ru = !git reset --hard origin/$(git branch --show-current)
 pu = -c 'merge.ff=true' pull --prune
 unstage = reset HEAD --
 temp = commit -m 'temp' --no-verify
@@ -64,6 +64,7 @@ user = glenjamin
 excludesfile = ~/.gitignore_global
 	trustctime = false
 pager=delta
+	editor = vim
 [rebase]
 autosquash = true
 [rerere]
