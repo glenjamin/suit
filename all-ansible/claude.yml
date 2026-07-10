@@ -19,3 +19,14 @@
       - skills
       - commands
       - scripts
+
+  - name: make Geckoboard dir
+    file:
+      path: "{{ ansible_user_dir }}/Development/Geckoboard"
+      state: directory
+  - name: symlink Geckoboard-scoped claude config
+    file:
+      src: "{{playbook_dir}}/files/geckoboard-CLAUDE.md"
+      path: "{{ ansible_user_dir }}/Development/Geckoboard/CLAUDE.md"
+      state: link
+      force: yes

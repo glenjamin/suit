@@ -1,0 +1,3 @@
+- Geckoboard repos are checked out as siblings under ~/Development/Geckoboard/
+- ~/Development/Geckoboard/conveyor has tips for navigating geckoboard repos and a big index of what they all do. Refer to this rather than making assumptions about behaviour of first-party upstream/downstream services
+- The "conveyor" workflow is the exception to the global "don't git push or open PRs" rule — there, pushing and opening PRs is expected
