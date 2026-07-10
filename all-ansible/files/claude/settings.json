@@ -28,6 +28,12 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/Caches/go-build",
+        "~/.npm/_cacache"
+      ]
+    },
     "network": {
       "allowUnixSockets": [
         "/private/tmp/claude/*"
