@@ -1,5 +1,7 @@
 {
+  "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
   "permissions": {
+    "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only.",
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
@@ -32,6 +34,7 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins.",
     "excludedCommands": [
       "gh *",
       "circleci *"
