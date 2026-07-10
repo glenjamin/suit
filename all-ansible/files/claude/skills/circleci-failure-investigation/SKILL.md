@@ -3,91 +3,59 @@ name: circleci-failure-investigation
 description: Investigate CircleCI failures with the preview `circleci` CLI. Use when CI is red on CircleCI and you need which job/step/test failed and why.
 ---
 
-# Investigating CircleCI failures from the CLI
+# Investigating CircleCI failures
 
-Uses the new **preview, agent-friendly** `circleci` CLI (`circleci 1.x-pre`). It is
-Markdown-first (tables by default, `--json` + `--jq` for scripting) and infers the
-project and branch from the current git repo's remote and checked-out branch.
+Uses the preview, agent-friendly `circleci` CLI. Output is markdown tables — read
+them directly. Hierarchy: **run** → **workflows** → **jobs** → **steps**; a parallel
+job (`parallelism > 1`) has multiple **executions** (0, 1, …).
 
-Hierarchy: **run** (one trigger firing) → **workflows** → **jobs** → **steps**.
-A parallel job (`parallelism > 1`) has multiple **executions** (index 0, 1, …).
+`circleci` infers the project *and* the branch from the current git repo — a plain
+`circleci run get` targets your checked-out branch. Override with `--branch <name>`,
+or `--project gh/org/repo` for another repo. Check auth with `circleci auth me`.
 
-Check auth once with `circleci auth me`. Most commands take no project argument —
-they read the git remote. Add `--project gh/org/repo` / `--branch <name>` to override.
-
-## The investigation flow
-
-### 1. Find the run and its failed jobs
+## 1. Find the failed job
 
 ```bash
-# Latest run for the current branch — jobs, outcomes, and their UUIDs
-circleci run get
-
-# Or list recent runs first (e.g. to pick an older revision)
-circleci run list --current-branch          # -B is shorthand
+circleci run get              # latest run for the current branch: jobs, status, IDs
+circleci run list -B          # recent runs, if you need an older one (-B = current branch)
 ```
 
-`run get` prints a table of every job with its status and ID — read off the failed
-job and copy its ID (every later command needs it). No `jq` required.
+Read the job table, copy the failed job's ID.
 
-To wait for an in-progress run to finish first: `circleci run watch`.
-
-### 2. Find the failed step in each failed job (the backbone)
-
-Not every failure is a parsed test. A lint, typecheck, build, dependency-check, or
-compile job fails a **step** with no test result, and even a test job can die
-(OOM, setup crash, non-zero exit) before storing results. So always start from the
-failed step — it exists for every failure.
+## 2. Find the failed step and read its log
 
 ```bash
-# Per-execution step table: step #, status, exit code, command — find the failed one
-circleci job get <job-id>
-
-# Read that step's full output (stdout+stderr, ANSI stripped when piped)
-circleci job output get <job-id> --step-num <N> --execution 0
+circleci job get <job-id>                              # step table per execution: #, status, exit code
+circleci job output get <job-id> --step-num <N> --execution <X>   # that step's full log
 ```
 
-`job get` lists every step with its number, status, and exit code, split per
-execution — read off the failed step's number (and which execution it's in). For a
-single-execution job that's `--execution 0`; for a parallel job see the gotcha below.
+`job get` shows every step's number, status, and exit code, split per execution —
+read off the failed step and which execution it's in (single-execution job → `0`).
+`circleci job output list <job-id>` instead prints the tail of every step inline for
+a quick scan (`--tail 0` for the whole thing).
 
-`job output list <job-id>` is an alternative that prints the last 200 lines of every
-step inline — good for a quick scan of where it broke; `--tail 0` shows all lines.
+The step log is the source of truth for **any** failure — lint, typecheck, build,
+crash, or test. For non-test jobs you're done here.
 
-The step log is the source of truth for **non-test failures** — read it directly to
-see the eslint errors, `tsc` diagnostics, webpack/build error, failing shell
-command, etc. For those jobs you are done here; step 3 only applies when the job
-parsed test results.
+## 3. Test jobs: list the parsed failures
 
-### 3. If the job stored test results, read the parsed failures
-
-When the failing step ran a test suite that uploaded JUnit via `store_test_results`,
-`testresult` gives you the failures structured — cleaner than grepping the log.
-It shows **failures only** by default and aggregates across all parallel executions.
+If the job stored test results (`store_test_results`), `testresult` names the failing
+tests without scanning the log. Failures only by default; aggregates all executions.
 
 ```bash
-circleci testresult list <job-id>                      # failed tests, as a table
-circleci testresult list <job-id> --json | jq -r '.message'   # full assertion message(s)
+circleci testresult list <job-id>
 ```
 
-The rendered table truncates; `--json` carries the complete failure `message`
-(the stack trace / expected-vs-received). `--json` emits **JSONL** (one object per
-test) — with `--jq`, the expression runs once per record.
+Empty output means nothing was *parsed* (no results stored, or a crash before the
+upload step) — not that it passed. Trust the step outcome from step 2 and read the
+log for the real error.
 
-`testresult list` returning nothing does **not** mean the job passed — it means no
-failures were *parsed* (no results stored, or a crash before the upload step). Trust
-the step outcome from step 2, and read the raw log for the real error.
+## Notes
 
-## Parallelism gotcha
-
-For a job with `parallelism > 1`, a failing test lives in exactly one execution.
-`testresult list` aggregates them, so it tells you *what* failed — but
-`job output get` is **per-execution**, so you must target the right `--execution`
-to see the log. `job get <job-id>` prints a step table per execution, so you can see
-at a glance which shard has the failed step and pass that `--execution` index.
-
-## Handy extras
-
-- `circleci job artifact list <job-id>` / `download` — screenshots, coverage, Playwright traces.
-- `circleci <cmd> <sub> --help` — every command documents its `JSON fields:` for `--jq`.
-- Add `--json`/`--jq`/`-q` (quiet) to any command for scripting.
+- Parallel jobs: `testresult` aggregates executions but `job output get` is
+  per-execution — `job get` shows which execution has the failed step; pass that `--execution`.
+- Step `status` is `succeeded`/`failed` (run/job level uses `success`).
+- Add `--json` (optionally with `--jq '<expr>'`) to any command for structured output.
+- Commands all provide detailed `--help`, use to discover more flags and commands.
+- `circleci job artifact list <job-id>` / `download` — screenshots, coverage, traces.
+- `circleci api '<path>'` — REST fallback for anything the typed commands don't expose.
