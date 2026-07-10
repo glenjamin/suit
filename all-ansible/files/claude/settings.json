@@ -13,7 +13,11 @@
       "Bash(git log:*)",
       "Bash(git add:*)",
       "Bash(git grep:*)",
-      "Bash(gh pr-feedback:*)"
+      "Bash(gh pr-feedback:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(gem list:*)",
+      "Bash(circleci config validate:*)"
     ],
     "defaultMode": "auto"
   },
