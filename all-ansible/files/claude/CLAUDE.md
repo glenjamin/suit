@@ -7,6 +7,7 @@
 - Define helpers at the bottom of files, so the most relevant code is nearer the top
 - Comments describe current behaviour and why, not what changed or the history
 - Prefer high-level, behaviour-focused tests that drive real user-facing seams over unit tests coupled to implementation — BDD in spirit, not Cucumber/Gherkin; on small changes, follow the existing per-project test patterns rather than restyling
+- Prefer a realistic fake that models behaviour over canned per-test stubs, even when a stubbing helper is what wires the fake in
 - Ground claims in the source: verify against it before asserting or pushing back, and don't estimate or fabricate figures
 - Don't unilaterally make a UX tradeoff — if a change would degrade or significantly alter the UX (for a code-quality goal, or to work around a conflict), surface it and ask
 - The Bash tool actually runs fish, not bash
