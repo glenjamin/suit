@@ -2,11 +2,6 @@
 - hosts: all
   tasks:
 
-  # Required to make TouchID sudo work in iTerm
-  # https://github.com/fabianishere/pam_reattach
-  # - homebrew:
-  #    pkg: fabianishere/personal/pam_reattach
-
   - name: enable touchid pam
     become: yes
     copy:
