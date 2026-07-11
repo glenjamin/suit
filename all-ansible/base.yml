@@ -86,3 +86,11 @@
       content: |
         source /opt/homebrew/etc/bash_completion.d/git-prompt.sh
       dest: "{{ ansible_user_dir }}/.bashrc"
+
+  - name: install coreutils
+    # provides `timeout` (unprefixed, since macOS has no conflicting binary) plus the g-prefixed GNU tools
+    homebrew:
+      pkg: coreutils
+    environment:
+      # our untrusted taps make brew warn on stderr, which the module reads as failure
+      HOMEBREW_NO_REQUIRE_TAP_TRUST: "1"
