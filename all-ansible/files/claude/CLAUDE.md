@@ -6,8 +6,9 @@
 - Don't reply to github review comments
 - Define helpers at the bottom of files, so the most relevant code is nearer the top
 - Comments describe current behaviour and why, not what changed or the history
+- Prefer high-level, behaviour-focused tests that drive real user-facing seams over unit tests coupled to implementation — BDD in spirit, not Cucumber/Gherkin; on small changes, follow the existing per-project test patterns rather than restyling
 - Ground claims in the source: verify against it before asserting or pushing back, and don't estimate or fabricate figures
-- Don't degrade or significantly change UX for the sake of a code-quality task — ask for input first
+- Don't unilaterally make a UX tradeoff — if a change would degrade or significantly alter the UX (for a code-quality goal, or to work around a conflict), surface it and ask
 - The Bash tool actually runs fish, not bash
 - Put temp files in the session scratchpad, creating and using them in the same shell command
 - `mise` is used to manage ruby/go/node versions
