@@ -7,6 +7,7 @@
 - Define helpers at the bottom of files, so the most relevant code is nearer the top
 - Comments describe current behaviour and why, not what changed or the history
 - Ground claims in the source: verify against it before asserting or pushing back, and don't estimate or fabricate figures
+- Don't degrade or significantly change UX for the sake of a code-quality task — ask for input first
 - The Bash tool actually runs fish, not bash
 - Put temp files in the session scratchpad, creating and using them in the same shell command
 - `mise` is used to manage ruby/go/node versions
