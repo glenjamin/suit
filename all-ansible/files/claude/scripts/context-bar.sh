@@ -28,6 +28,57 @@ model=$(echo "$input" | jq -r '.model.display_name // .model.id // "?"')
 cwd=$(echo "$input" | jq -r '.cwd // empty')
 dir=$(basename "$cwd" 2>/dev/null || echo "?")
 
+# Live effort level, tracking mid-session changes. Absent for models that
+# don't take a reasoning effort, so the segment collapses to nothing there.
+# Known levels abbreviate to one gray character butted against the model name,
+# the gray doing the work a separator otherwise would.
+effort=$(echo "$input" | jq -r '.effort.level // empty')
+case "$effort" in
+    low)    effort_char="l" ;;
+    medium) effort_char="m" ;;
+    high)   effort_char="h" ;;
+    xhigh)  effort_char="x" ;;
+    max)    effort_char="!" ;;
+    *)      effort_char="$effort" ;;  # unrecognised level: pass through whole
+esac
+effort_segment=""
+[[ -n "$effort_char" ]] && effort_segment="${C_GRAY}${effort_char}"
+
+# Git branch and dirty status
+git_segment=""
+if [[ -n "$cwd" ]]; then
+    branch=$(git -C "$cwd" symbolic-ref --short HEAD 2>/dev/null \
+        || git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+    if [[ -n "$branch" ]]; then
+        dirty=""
+        if [[ -n $(git -C "$cwd" status --porcelain 2>/dev/null) ]]; then
+            dirty="*"
+        fi
+
+        # Real repo name: parent of the common git dir (shared by all worktrees)
+        common_dir=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
+        [[ "$common_dir" != /* ]] && common_dir="$cwd/$common_dir"
+        repo=$(basename "$(cd "$(dirname "$common_dir")" 2>/dev/null && pwd)")
+
+        toplevel=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+        git_dir=$(git -C "$cwd" rev-parse --git-dir 2>/dev/null)
+
+        # (repo) prefixes the branch when we're not at a plain repo root.
+        # Worktrees also get a ⧉ marker after the branch, plus the worktree
+        # name when we're in a subdir (at its root the dir segment shows it).
+        repo_prefix=""
+        wt_suffix=""
+        if [[ "$git_dir" == */worktrees/* ]]; then
+            repo_prefix="(${repo}) "
+            wt_suffix=" ⧉"
+            [[ "$toplevel" != "$cwd" ]] && wt_suffix+=" $(basename "$toplevel")"
+        elif [[ -n "$toplevel" && "$toplevel" != "$cwd" ]]; then
+            repo_prefix="(${repo}) "
+        fi
+        git_segment=" ${C_GRAY}| ${C_ACCENT}${repo_prefix}${branch}${dirty}${wt_suffix}${C_RESET}"
+    fi
+fi
+
 # Get used context percent from JSON
 pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
 
@@ -53,8 +104,9 @@ done
 
 ctx="${bar} ${C_GRAY}${pct_prefix}${pct}% of ${max_k}k tokens"
 
-# Build output: Model | Dir | Branch (uncommitted) | Context
-output="${C_ACCENT}${model}${C_GRAY} | ${dir}"
-output+=" | ${ctx}${C_RESET}"
+# Build output: Model+effort | Dir | Branch* | Context
+output="${C_ACCENT}${model}${effort_segment}${C_GRAY} | ${dir}"
+output+="${git_segment}"
+output+="${C_GRAY} | ${ctx}${C_RESET}"
 
 printf '%b\n' "$output"
