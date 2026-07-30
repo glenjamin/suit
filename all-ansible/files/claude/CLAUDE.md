@@ -17,6 +17,7 @@
 
 - Define helpers at the bottom of files, so the most relevant code is nearer the top
 - Comments describe current behaviour and why, not what changed or the history
+- In comments give the purpose, not implementation detail, and describe behaviour rather than citing concrete values that will drift
 - Prefer high-level, behaviour-focused tests that drive real user-facing seams over unit tests coupled to implementation — BDD in spirit, not Cucumber/Gherkin; on small changes, follow the existing per-project test patterns rather than restyling
 - Prefer a realistic fake that models behaviour over canned per-test stubs, even when a stubbing helper is what wires the fake in
 
