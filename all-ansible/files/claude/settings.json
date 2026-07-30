@@ -27,6 +27,50 @@
     ],
     "defaultMode": "auto"
   },
+  "deniedMcpServers": [
+    {
+      "serverUrl": "https://mcp.canva.com/*"
+    },
+    {
+      "serverUrl": "https://dovetail.com/*"
+    },
+    {
+      "serverUrl": "https://api.fathom.ai/*"
+    },
+    {
+      "serverUrl": "https://gateway.geckoboard.com/*"
+    },
+    {
+      "serverUrl": "https://gmailmcp.googleapis.com/*"
+    },
+    {
+      "serverUrl": "https://calendarmcp.googleapis.com/*"
+    },
+    {
+      "serverUrl": "https://drivemcp.googleapis.com/*"
+    },
+    {
+      "serverUrl": "https://app.hex.tech/*"
+    },
+    {
+      "serverUrl": "https://mcp.hubspot.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.intercom.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.mixpanel.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.semrush.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.shortcut.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.slack.com/*"
+    }
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -77,5 +121,6 @@
     "sessionUrl": false
   },
   "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
-  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous)."
+  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous).",
+  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL)."
 }
