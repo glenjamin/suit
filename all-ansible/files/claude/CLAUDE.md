@@ -22,7 +22,6 @@
 
 ## Environment
 
-- Don't edit `package.json` by hand for dependency changes, use `npm` cli commands
 - Commands that need network should be run (or retried) without the sandbox
 - Put temp files in the session scratchpad
 - `mise` is used to manage ruby/go/node versions
