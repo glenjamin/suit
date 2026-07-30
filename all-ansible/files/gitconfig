@@ -71,8 +71,8 @@ autosquash = true
 enabled = true
 [cola]
 spellcheck = false
-[url "git@github.com:"]
-	insteadOf = https://github.com/
+[url "https://github.com/"]
+	insteadOf = git@github.com:
 [pull]
 	ff = only
 [init]
@@ -92,3 +92,9 @@ spellcheck = false
     hunk-header-file-style = red
     hunk-header-line-number-style = "#067a00"
     hunk-header-style = file line-number syntax
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
