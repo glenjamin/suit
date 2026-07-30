@@ -1,4 +1,7 @@
 {
+  "env": {
+    "AWS_VAULT_PROMPT": "terminal"
+  },
   "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
   "permissions": {
     "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only.",
@@ -23,6 +26,19 @@
       "Bash(circleci config validate:*)"
     ],
     "defaultMode": "auto"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/aws-sso-preflight.py"
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",
@@ -59,5 +75,7 @@
   "showClearContextOnPlanAccept": true,
   "attribution": {
     "sessionUrl": false
-  }
+  },
+  "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
+  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous)."
 }
