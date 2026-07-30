@@ -2,9 +2,10 @@
   "env": {
     "AWS_VAULT_PROMPT": "terminal"
   },
-  "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
+  "attribution": {
+    "sessionUrl": false
+  },
   "permissions": {
-    "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only.",
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
@@ -25,7 +26,8 @@
       "Bash(gem list:*)",
       "Bash(circleci config validate:*)"
     ],
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only."
   },
   "deniedMcpServers": [
     {
@@ -95,32 +97,35 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
-    "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins.",
+    "network": {
+      "allowUnixSockets": [
+        "/private/tmp/claude/*"
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/Caches/go-build",
+        "~/go/pkg/mod",
+        "~/.npm/_cacache"
+      ]
+    },
     "excludedCommands": [
       "gh *",
       "circleci *",
       "terraform *",
       "git fetch *"
     ],
-    "filesystem": {
-      "allowWrite": [
-        "~/Library/Caches/go-build",
-        "~/.npm/_cacache"
-      ]
-    },
-    "network": {
-      "allowUnixSockets": [
-        "/private/tmp/claude/*"
-      ],
-      "allowLocalBinding": true
-    }
+    "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins."
   },
-  "skipAutoPermissionPrompt": true,
+  "effortLevel": "high",
   "showClearContextOnPlanAccept": true,
-  "attribution": {
-    "sessionUrl": false
-  },
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true,
+  "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
+  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL).",
   "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
-  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous).",
-  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL)."
+  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous)."
 }
