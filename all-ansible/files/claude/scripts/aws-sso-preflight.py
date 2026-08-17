@@ -4,12 +4,27 @@
 Claude sessions hang when a Bash command resolves AWS credentials and something
 along the way blocks on interactive input that nobody can answer:
 
-  1. The SSO OIDC token (in ~/.aws/sso/cache) is expired -> aws-vault/the CLI
-     starts a browser login and polls forever.
+  1. aws-vault's SSO token is stale -> aws-vault runs the OIDC device flow and
+     polls forever.
   2. The aws-vault keychain is locked -> aws-vault must read its cached
      role-credential session from it, which pops a macOS unlock dialog. Unlike
      SSO, this is a local-only GUI with no remote/device-code equivalent -- but
      the underlying native SSO profile can be used directly to skip it.
+
+The plain `aws` CLI does not hang: with no usable token it exits immediately with
+"Error loading SSO Token". That is still worth catching, because the message
+gives no route to a fix, but it is a fast failure rather than a hang -- and it
+only happens when the CLI has nothing left to fall back on. Two fallbacks make an
+expired token a non-event, and neither is visible in the token's expiry:
+
+  - Role credentials in ~/.aws/cli/cache outlive the OIDC token, for as long as
+    the permission set's session duration allows. While one is valid the CLI
+    serves it without consulting the token at all.
+  - A token carrying a refreshToken (with a live client registration) is renewed
+    silently, with no prompt and no browser.
+
+Blocking without checking those turns a working command into a needless request
+for the user to re-authenticate.
 
 It also catches a related dead-end: an `aws` command with no profile selected
 when no [default] profile exists. That doesn't hang -- it fails with "Unable to
@@ -45,6 +60,7 @@ from pathlib import Path
 AWS_DIR = Path(os.environ.get("AWS_CONFIG_DIR", Path.home() / ".aws"))
 CONFIG_PATH = Path(os.environ.get("AWS_CONFIG_FILE", AWS_DIR / "config"))
 SSO_CACHE = AWS_DIR / "sso" / "cache"
+CLI_CACHE = AWS_DIR / "cli" / "cache"
 KEYCHAIN_DIR = Path.home() / "Library" / "Keychains"
 
 # Only gate commands that actually resolve AWS credentials. Matching is by
@@ -103,9 +119,14 @@ def check(command: str) -> list[str]:
             return [vault_sso_issue(profile)]
         return []
 
-    # Native SSO ecosystem (profile used directly, no aws-vault): the CLI reads
-    # ~/.aws/sso/cache, so that token's expiry is authoritative.
+    # Native SSO ecosystem (profile used directly, no aws-vault). An expired token
+    # only strands the command when the CLI has no fallback: cached role creds it
+    # can serve directly, or a refresh token it can redeem unattended.
     if session is not None and not session_is_fresh(session):
+        if cached_role_credentials_fresh(profile):
+            return []
+        if token_is_refreshable(session):
+            return []
         return [sso_issue(session)]
     return []
 
@@ -200,10 +221,86 @@ def resolve_sso_session(profile: str, _seen: set[str] | None = None) -> str | No
 
 
 def session_is_fresh(session: str) -> bool:
-    key = session[len("legacy:"):] if session.startswith("legacy:") else session
-    token_file = SSO_CACHE / (sha1(key) + ".json")
-    expires = read_expiry(token_file)
+    expires = read_expiry(token_path(session))
     return expires is not None and expires > now() + SKEW_SECONDS
+
+
+def token_path(session: str) -> Path:
+    key = session[len("legacy:"):] if session.startswith("legacy:") else session
+    return SSO_CACHE / (sha1(key) + ".json")
+
+
+def token_is_refreshable(session: str) -> bool:
+    """Whether an expired token can be renewed with no user interaction.
+
+    The CLI redeems a refreshToken against the client registration, so both must
+    be present and the registration still valid. A refresh that fails server-side
+    (the Identity Center session was revoked) errors immediately rather than
+    prompting, so treating this as usable costs a fast failure at worst."""
+    token = read_json(token_path(session))
+    if not token or not token.get("refreshToken"):
+        return False
+    registration = parse_timestamp(token.get("registrationExpiresAt"))
+    if registration is None:
+        return False
+    return registration > now() + SKEW_SECONDS
+
+
+def cached_role_credentials_fresh(profile: str) -> bool:
+    """Whether the CLI already holds unexpired role credentials for the account
+    the profile targets, which it serves without consulting the SSO token.
+
+    Entries are matched on account rather than by recomputing the CLI's cache key,
+    which is an internal detail. Where one account is reached through several
+    roles this can match a sibling role's credentials; the cost is a command that
+    proceeds and then fails fast, never a hang."""
+    account = profile_account_id(profile)
+    if account is None:
+        return False
+
+    try:
+        entries = list(CLI_CACHE.glob("*.json"))
+    except OSError:
+        return False
+
+    for path in entries:
+        cached = read_json(path)
+        if not cached:
+            continue
+        credentials = cached.get("Credentials") or {}
+        if credentials.get("AccountId") != account:
+            continue
+        expiry = parse_timestamp(credentials.get("Expiration"))
+        if expiry is not None and expiry > now() + SKEW_SECONDS:
+            return True
+    return False
+
+
+def profile_account_id(profile: str, _seen: set[str] | None = None) -> str | None:
+    """The account a profile resolves to, following the same chain as
+    resolve_sso_session so a credential_process wrapper still reports its base."""
+    _seen = _seen or set()
+    if profile in _seen:
+        return None
+    _seen.add(profile)
+
+    cfg = load_config()
+    section = section_for(profile)
+    if not cfg.has_section(section):
+        return None
+
+    if cfg.has_option(section, "sso_account_id"):
+        return cfg.get(section, "sso_account_id")
+
+    if cfg.has_option(section, "credential_process"):
+        chained = last_profile_arg(cfg.get(section, "credential_process"))
+        if chained:
+            return profile_account_id(chained, _seen)
+
+    if cfg.has_option(section, "source_profile"):
+        return profile_account_id(cfg.get(section, "source_profile"), _seen)
+
+    return None
 
 
 # --- aws-vault keychain -------------------------------------------------------
@@ -352,7 +449,9 @@ def sso_issue(session: str) -> str:
     )
     # Which side a prompt was typed from isn't knowable to the hook, so present
     # both routes to the user and let them pick from the notification.
-    return f"""* {label} is expired/missing (would start a browser login).
+    return f"""* {label} is expired/missing, with no cached role credentials and no usable
+  refresh token, so the command exits immediately with "Error loading SSO Token".
+  It will not hang, but it cannot succeed until the session is renewed.
   Show the user BOTH routes below and let THEM choose -- do not pick one yourself:
     A) At the Mac -- opens a browser locally:
          {login}   (or type:  ! {login} )
@@ -437,11 +536,11 @@ def block_no_profile(issue: str) -> None:
 def block(issues: list[str]) -> None:
     body = "\n".join(issues)
     print(
-        "BLOCKED: this command would resolve AWS credentials and HANG on an "
-        "interactive prompt. Do NOT retry, and do NOT choose a fix yourself. "
-        "Send the user a PushNotification and present the choices in each item "
-        "below for them to pick from; re-run the original command once they "
-        f"confirm it's resolved.\n\n{body}",
+        "BLOCKED: this command cannot resolve AWS credentials -- it would hang on "
+        "an interactive prompt, or fail with no route to a fix. Do NOT retry, and "
+        "do NOT choose a fix yourself. Send the user a PushNotification and "
+        "present the choices in each item below for them to pick from; re-run the "
+        f"original command once they confirm it's resolved.\n\n{body}",
         file=sys.stderr,
     )
 
@@ -581,18 +680,28 @@ def referenced_base_profiles(cfg: configparser.ConfigParser) -> set[str]:
     return bases
 
 
-def read_expiry(token_file: Path) -> float | None:
+def read_json(path: Path) -> dict | None:
     try:
-        cached = json.loads(token_file.read_text())
+        loaded = json.loads(path.read_text())
     except (OSError, ValueError):
         return None
-    raw = cached.get("expiresAt") or cached.get("ExpiresAt")
+    return loaded if isinstance(loaded, dict) else None
+
+
+def parse_timestamp(raw: str | None) -> float | None:
     if not raw:
         return None
     try:
         return datetime.fromisoformat(raw.replace("Z", "+00:00")).timestamp()
-    except ValueError:
+    except (AttributeError, ValueError):
         return None
+
+
+def read_expiry(token_file: Path) -> float | None:
+    cached = read_json(token_file)
+    if not cached:
+        return None
+    return parse_timestamp(cached.get("expiresAt") or cached.get("ExpiresAt"))
 
 
 def last_profile_arg(command: str) -> str | None:
@@ -650,17 +759,21 @@ region = us-east-1
         def setUp(self):
             self.tmp = Path(tempfile.mkdtemp())
             self._orig = {k: getattr(module, k)
-                          for k in ("CONFIG_PATH", "SSO_CACHE", "KEYCHAIN_DIR", "_config_cache")}
+                          for k in ("CONFIG_PATH", "SSO_CACHE", "CLI_CACHE",
+                                    "KEYCHAIN_DIR", "_config_cache")}
             config = self.tmp / "config"
             config.write_text(CONFIG)
             self.sso_cache = self.tmp / "sso" / "cache"
             self.sso_cache.mkdir(parents=True)
+            self.cli_cache = self.tmp / "cli" / "cache"
+            self.cli_cache.mkdir(parents=True)
             self.keychain_dir = self.tmp / "Keychains"
             self.keychain_dir.mkdir()
             (self.keychain_dir / "aws-vault.keychain-db").write_text("")  # existence only
 
             module.CONFIG_PATH = config
             module.SSO_CACHE = self.sso_cache
+            module.CLI_CACHE = self.cli_cache
             module.KEYCHAIN_DIR = self.keychain_dir
             module._config_cache = None
 
@@ -668,11 +781,32 @@ region = us-east-1
             for k, v in self._orig.items():
                 setattr(module, k, v)
 
-        def set_token(self, *, expired: bool):
-            when = now() + (-3600 if expired else 3600)
-            stamp = datetime.fromtimestamp(when, timezone.utc).isoformat().replace("+00:00", "Z")
+        @staticmethod
+        def stamp(offset: float) -> str:
+            when = datetime.fromtimestamp(now() + offset, timezone.utc)
+            return when.isoformat().replace("+00:00", "Z")
+
+        def set_token(self, *, expired: bool, refreshable: bool = False,
+                      registration_expired: bool = False):
+            body = {"expiresAt": self.stamp(-3600 if expired else 3600)}
+            if refreshable:
+                body["refreshToken"] = "rt-abc"
+                body["registrationExpiresAt"] = self.stamp(
+                    -3600 if registration_expired else 86400)
             token = self.sso_cache / (sha1("geckoboard") + ".json")
-            token.write_text(json.dumps({"expiresAt": stamp}))
+            token.write_text(json.dumps(body))
+
+        def set_cached_role_creds(self, *, account: str, expired: bool = False):
+            """A ~/.aws/cli/cache entry as the CLI writes it for an SSO profile."""
+            body = {
+                "ProviderType": "sso",
+                "Credentials": {
+                    "AccessKeyId": "AKIA", "SecretAccessKey": "s", "SessionToken": "t",
+                    "Expiration": self.stamp(-3600 if expired else 3600),
+                    "AccountId": account,
+                },
+            }
+            (self.cli_cache / f"{account}.json").write_text(json.dumps(body))
 
         def check(self, command, *, locked=False, vault_fresh=True, env=None):
             # aws-vault session freshness comes from keychain metadata, faked here;
@@ -731,6 +865,45 @@ region = us-east-1
             self.assertEqual(len(issues), 1)
             self.assertIn("SSO session is expired", issues[0])
             self.assertIn("--use-device-code", issues[0])
+            self.assertIn("will not hang", issues[0])  # fast failure, not a hang
+
+        # --- fallbacks that make an expired native token a non-event ---
+
+        def test_expired_token_allowed_when_role_creds_cached(self):
+            # The case that cost real round-trips: the OIDC token lapses after an
+            # hour while the role credentials behind it run for the permission
+            # set's full session duration.
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="111111111111")
+            self.assertEqual(self.check("aws s3 ls --profile prod-sso"), [])
+
+        def test_expired_token_flagged_when_cached_creds_also_expired(self):
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="111111111111", expired=True)
+            self.assertEqual(len(self.check("aws s3 ls --profile prod-sso")), 1)
+
+        def test_cached_creds_for_another_account_do_not_count(self):
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="999999999999")
+            self.assertEqual(len(self.check("aws s3 ls --profile prod-sso")), 1)
+
+        def test_expired_token_allowed_when_refreshable(self):
+            self.set_token(expired=True, refreshable=True)
+            self.assertEqual(self.check("aws s3 ls --profile prod-sso"), [])
+
+        def test_expired_token_flagged_when_registration_expired(self):
+            # A refresh token is useless once its client registration lapses.
+            self.set_token(expired=True, refreshable=True, registration_expired=True)
+            self.assertEqual(len(self.check("aws s3 ls --profile prod-sso")), 1)
+
+        def test_vault_profile_ignores_cli_credential_cache(self):
+            # A vault profile resolves through credential_process, which the CLI
+            # cache never backs, so a fresh entry must not mask a stale session.
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="111111111111")
+            issues = self.check("aws s3 ls --profile prod", vault_fresh=False)
+            self.assertEqual(len(issues), 1)
+            self.assertIn("aws-vault has no valid cached session", issues[0])
 
         # --- gating ---
 
