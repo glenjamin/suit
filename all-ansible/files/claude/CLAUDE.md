@@ -10,6 +10,7 @@
 - Always branch worktrees off the fetched upstream HEAD (`git fetch origin`, then `origin/master`), never the local checkout — local clones are often behind, and stale docs or tooling then read as missing
 - Amend or squash fixups into the relevant commit; don't stack "fix" commits
 - Don't git push or open PRs, I'll do that. When I do explicitly make you open a PR, don't hard-wrap the description — one line per paragraph, let it soft-wrap.
+- Same in markdown files: one line per paragraph and per list item, soft-wrapped, never hard-wrapped to a column
 - In chat replies, write PR/issue mentions as clickable markdown links (`[#123](url)`, `[repo#123](url)`), never a bare `#123`. On GitHub (PR descriptions, comments) use the bare `#123`/`owner/repo#123` form instead — GitHub auto-links those.
 - Don't reply to github review comments
 
@@ -18,6 +19,7 @@
 - Define helpers at the bottom of files, so the most relevant code is nearer the top
 - Comments describe current behaviour and why, not what changed or the history
 - In comments give the purpose, not implementation detail, and describe behaviour rather than citing concrete values that will drift
+- Comment only where the code can't say it itself, and keep it to a line or two — reasoning that needs longer belongs in the commit or PR
 - Prefer high-level, behaviour-focused tests that drive real user-facing seams over unit tests coupled to implementation — BDD in spirit, not Cucumber/Gherkin; on small changes, follow the existing per-project test patterns rather than restyling
 - Prefer a realistic fake that models behaviour over canned per-test stubs, even when a stubbing helper is what wires the fake in
 
