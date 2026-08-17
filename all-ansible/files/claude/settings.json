@@ -1,11 +1,14 @@
 {
+  "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
   "env": {
     "AWS_VAULT_PROMPT": "terminal"
   },
   "attribution": {
     "sessionUrl": false
   },
+  "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
   "permissions": {
+    "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only.",
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
@@ -26,9 +29,9 @@
       "Bash(gem list:*)",
       "Bash(circleci config validate:*)"
     ],
-    "defaultMode": "auto",
-    "// allow": "Hard-allowed: bypasses the auto-mode classifier entirely (no prompt, no check). Safe read-only / idempotent commands only."
+    "defaultMode": "auto"
   },
+  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL).",
   "deniedMcpServers": [
     {
       "serverUrl": "https://mcp.canva.com/*"
@@ -73,6 +76,7 @@
       "serverUrl": "https://mcp.slack.com/*"
     }
   ],
+  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous).",
   "hooks": {
     "PreToolUse": [
       {
@@ -110,22 +114,18 @@
         "~/.npm/_cacache"
       ]
     },
+    "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins.",
     "excludedCommands": [
       "gh *",
       "circleci *",
       "terraform *",
       "git fetch *"
-    ],
-    "// excludedCommands": "Run outside the sandbox from the start, for commands that reliably fail or misdetect inside it. Still auto-mode-classified unless also listed in permissions.allow above, in which case the hard-allow wins."
+    ]
   },
   "effortLevel": "high",
   "showClearContextOnPlanAccept": true,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "// permissions": "defaultMode 'auto' runs a background classifier on every action. The lists below are the curated exceptions to that flow.",
-  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL).",
-  "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
-  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous)."
+  "skipAutoPermissionPrompt": true
 }
