@@ -122,6 +122,8 @@
       "git fetch *"
     ]
   },
+  "// cleanupPeriodDays": "Transcript retention, counted from each session's last activity. The default is short enough that sessions worth going back to are already deleted by the time you look for them.",
+  "cleanupPeriodDays": 365,
   "effortLevel": "high",
   "showClearContextOnPlanAccept": true,
   "remoteControlAtStartup": true,
