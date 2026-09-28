@@ -1,0 +1,19 @@
+---
+- hosts: all
+  tasks:
+
+  - name: find default firefox profile
+    shell: >
+      awk -F= '/^\[Install/{i=1} i && /^Default=/{print $2; exit}'
+      "{{ ansible_user_dir }}/Library/Application Support/Firefox/profiles.ini"
+    register: firefox_profile
+    changed_when: false
+  - name: symlink firefox customisations
+    file:
+      src: "{{playbook_dir}}/files/firefox/{{ item }}"
+      path: "{{ ansible_user_dir }}/Library/Application Support/Firefox/{{ firefox_profile.stdout }}/{{ item }}"
+      state: link
+      force: yes
+    loop:
+      - chrome
+      - user.js

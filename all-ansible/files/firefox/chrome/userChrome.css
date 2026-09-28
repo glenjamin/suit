@@ -1,0 +1,11 @@
+/* Nova's defaults live in @layer'd tokens, which beat user sheets without !important. */
+:root {
+  /* Squarer tabs */
+  --tab-border-radius: var(--border-radius-small) !important;
+  /* Inline padding on each tab, so the gap between tabs is twice this */
+  --tab-overflow-clip-margin: 1px !important;
+
+  /* Container colour line: hug the top, and stay clear of the corner curve */
+  --tab-context-line-block-offset: 1px !important;
+  --tab-context-line-inline-offset: calc(var(--tab-border-radius) * 0.75) !important;
+}
