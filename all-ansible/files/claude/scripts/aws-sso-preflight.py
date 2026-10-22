@@ -107,6 +107,8 @@ def check(command: str) -> list[str]:
     Empty list means the command is safe to run."""
     if not gates_credentials(command):
         return []
+    if help_only(command):
+        return []  # Documentation only; nothing resolves credentials.
 
     profile = target_profile(command)
     if profile is None:
@@ -684,11 +686,53 @@ def is_bare_aws_command(command: str) -> bool:
     for tokens in aws_invocations(command):
         if executable(tokens) != "aws":
             continue
+        if is_help_invocation(tokens):
+            continue
         args = [t for t in tokens[1:] if not t.startswith("-")]
         sub = args[0] if args else None
         if sub is not None and sub not in SAFE_AWS_SUBCOMMANDS:
             return True
     return False
+
+
+# Flags that turn any `aws` invocation into a local-documentation print.
+AWS_HELP_FLAGS = {"--help", "-h", "--version"}
+
+# Redirections belong to the shell, not to the CLI's argument list, so they must
+# not be read as a command word (`aws ecs help 2>&1` still ends on help).
+REDIRECTION = re.compile(r"^\d*[<>]")
+
+
+def is_help_invocation(tokens: list[str]) -> bool:
+    """Whether an `aws` invocation only prints local documentation, so it
+    resolves no credentials and no credential hazard can apply to it.
+
+    Matched as whole tokens, never a substring: a help flag anywhere, or the v2
+    `help` subcommand in a command position -- closing the command words
+    (`aws ecs help --profile p`) or the whole line (`aws --profile p ecs help`),
+    and not sitting where an option's value goes. An operand merely spelled
+    help -- an S3 key, a file path, a `--name help` value -- is not a request
+    for documentation."""
+    args = [a for a in tokens[1:] if not REDIRECTION.match(a)]
+    if any(arg in AWS_HELP_FLAGS for arg in args):
+        return True
+    if "help" not in args:
+        return False
+    at = args.index("help")
+    if at and args[at - 1].startswith("-"):
+        return False  # the value of an option, e.g. --name help
+    words = next((i for i, a in enumerate(args) if a.startswith("-")), len(args))
+    return at == len(args) - 1 or at == words - 1
+
+
+def help_only(command: str) -> bool:
+    """Whether every AWS invocation in a line is an `aws` help invocation, so
+    the line as a whole resolves nothing. A real command sharing the line is
+    still gated."""
+    invocations = aws_invocations(command)
+    return bool(invocations) and all(
+        executable(tokens) == "aws" and is_help_invocation(tokens)
+        for tokens in invocations)
 
 
 # Separators after which the next word is a new command's executable. Backticks
@@ -1083,6 +1127,31 @@ region = us-east-1
         def test_non_aws_command_is_ignored(self):
             self.set_token(expired=True)
             self.assertEqual(self.check("echo hello world", locked=True, vault_fresh=False), [])
+
+        def test_help_invocations_are_never_gated(self):
+            self.set_token(expired=True)
+            for command in ("aws help", "aws ecs help",
+                            "aws ecs create-capacity-provider help",
+                            "aws ecs create-capacity-provider --help",
+                            "aws ecs describe-clusters -h", "aws --version",
+                            "aws ecs help --profile prod",
+                            "aws --profile prod ecs create-capacity-provider help",
+                            "aws ecs create-capacity-provider help 2>",
+                            "aws ecs help >/tmp/out"):
+                self.assertEqual(
+                    self.check(command, locked=True, vault_fresh=False), [], command)
+                self.assertIsNone(self.no_profile(command), command)
+
+        def test_help_spelled_as_an_operand_still_gates(self):
+            for command in ("aws s3 cp ./help.txt s3://bucket/key",
+                            "aws s3 ls s3://bucket/help",
+                            "aws s3 cp help s3://bucket/key",
+                            "aws ssm get-parameter --name help",
+                            "aws s3 cp help.txt s3://bucket/help"):
+                self.assertIsNotNone(self.no_profile(command), command)
+
+        def test_help_alongside_a_real_command_still_gates(self):
+            self.assertIsNotNone(self.no_profile("aws ecs help && aws s3 ls"))
 
         def test_profile_without_sso_is_ignored(self):
             self.set_token(expired=True)
