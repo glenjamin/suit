@@ -12,6 +12,7 @@
         # - authy
         - bettertouchtool
         - dash
+        - finicky
         - firefox
         - google-chrome
 #        - irccloud

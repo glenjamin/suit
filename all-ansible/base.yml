@@ -40,6 +40,11 @@
       src: "{{playbook_dir}}/files/gitattributes"
       path: "{{ ansible_user_dir }}/.gitattributes_global"
       state: link
+  - name: symlink finicky config
+    file:
+      src: "{{playbook_dir}}/files/finicky.js"
+      path: "{{ ansible_user_dir }}/.finicky.js"
+      state: link
 
   - name: make ssh dir
     file:
