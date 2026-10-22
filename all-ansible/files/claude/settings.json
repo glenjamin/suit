@@ -70,7 +70,7 @@
       "serverUrl": "https://mcp.slack.com/*"
     }
   ],
-  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous).",
+  "// hooks": "aws-sso-preflight blocks Bash commands that would resolve creds through an expired AWS SSO session, so credential_process can't hang on an interactive login. It also blocks bare `aws` commands with no profile selected (and no [default]), which would fail on missing creds, and tells Claude to re-run with a fitting profile (asking the user only if it's ambiguous). cc-status is iTerm2's Claude Code integration, reporting each session's state to its tab.",
   "hooks": {
     "PreToolUse": [
       {
@@ -79,6 +79,104 @@
           {
             "type": "command",
             "command": "~/.claude/scripts/aws-sso-preflight.py"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/glen/.config/iterm2/cc-status"
           }
         ]
       }
