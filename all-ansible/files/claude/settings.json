@@ -31,7 +31,7 @@
     ],
     "defaultMode": "auto"
   },
-  "// deniedMcpServers": "Block all claude.ai cloud connectors except Notion (matched by URL).",
+  "// deniedMcpServers": "Block the claude.ai cloud connectors I don't use (matched by URL).",
   "deniedMcpServers": [
     {
       "serverUrl": "https://mcp.canva.com/*"
@@ -52,16 +52,10 @@
       "serverUrl": "https://calendarmcp.googleapis.com/*"
     },
     {
-      "serverUrl": "https://drivemcp.googleapis.com/*"
-    },
-    {
       "serverUrl": "https://app.hex.tech/*"
     },
     {
       "serverUrl": "https://mcp.hubspot.com/*"
-    },
-    {
-      "serverUrl": "https://mcp.intercom.com/*"
     },
     {
       "serverUrl": "https://mcp.mixpanel.com/*"
