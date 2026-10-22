@@ -26,6 +26,12 @@ expired token a non-event, and neither is visible in the token's expiry:
 Blocking without checking those turns a working command into a needless request
 for the user to re-authenticate.
 
+The two paths to an account -- aws-vault's keychain and the native SSO cache --
+keep separate credentials and expire independently, so one being dead says
+nothing about the other. Whenever a command is blocked, the other path is checked
+too: if it is live, the block names the profile that works so the session can
+carry on there instead of stopping to re-authenticate.
+
 It also catches a related dead-end: an `aws` command with no profile selected
 when no [default] profile exists. That doesn't hang -- it fails with "Unable to
 locate credentials" -- so the hook blocks and steers Claude to re-run with a
@@ -91,7 +97,7 @@ def main() -> int:
     if not issues:
         return 0
 
-    block(issues)
+    block(issues, command)
     return 2
 
 
@@ -114,7 +120,7 @@ def check(command: str) -> list[str]:
         # token and role-cred session. The ~/.aws/sso/cache files are a stale
         # artifact aws-vault never updates, so they must NOT be consulted here.
         if keychain_locked(keychain):
-            return [keychain_issue(keychain, profile, session)]
+            return [keychain_issue(keychain, profile)]
         if not aws_vault_session_fresh(profile, keychain):
             return [vault_sso_issue(profile)]
         return []
@@ -122,12 +128,8 @@ def check(command: str) -> list[str]:
     # Native SSO ecosystem (profile used directly, no aws-vault). An expired token
     # only strands the command when the CLI has no fallback: cached role creds it
     # can serve directly, or a refresh token it can redeem unattended.
-    if session is not None and not session_is_fresh(session):
-        if cached_role_credentials_fresh(profile):
-            return []
-        if token_is_refreshable(session):
-            return []
-        return [sso_issue(session)]
+    if session is not None and not native_credentials_live(profile, session):
+        return [sso_issue(session, profile)]
     return []
 
 
@@ -435,9 +437,77 @@ def aws_vault_session_expiry(managed_profile: str, keychain: Path) -> int | None
     return best
 
 
+# --- is a credential path usable right now? -----------------------------------
+# The two paths to an account -- aws-vault's keychain and the native SSO cache --
+# hold their own credentials and fail independently, so one being dead says
+# nothing about the other. A blocked command should always name the live one.
+
+def native_credentials_live(profile: str, session: str | None = None) -> bool:
+    """Whether a native SSO profile resolves credentials with no prompt at all.
+
+    Any one of three states is enough: a live OIDC token; role credentials cached
+    from an earlier one, which outlive it by as much as the permission set's
+    session duration allows; or a refresh token redeemable unattended."""
+    if cached_role_credentials_fresh(profile):
+        return True
+    if session is None:
+        session = resolve_sso_session(profile)
+    if session is None:
+        return False
+    return session_is_fresh(session) or token_is_refreshable(session)
+
+
+def vault_credentials_live(profile: str) -> bool:
+    """Whether aws-vault can serve a profile silently: the keychain unlocked, and
+    a cached role-cred session in it still in date."""
+    keychain = aws_vault_keychain("", profile)
+    if keychain is None or keychain_locked(keychain):
+        return False
+    return aws_vault_session_fresh(profile, keychain)
+
+
+def native_bypass(profile: str) -> str | None:
+    """The native SSO profile behind an aws-vault profile, if using it directly
+    would resolve credentials right now -- else None."""
+    native = native_sso_profile(profile)
+    if native is None or native == profile:
+        return None
+    return native if native_credentials_live(native) else None
+
+
+def vault_bypass(profile: str) -> str | None:
+    """The aws-vault profile fronting a native SSO profile, if aws-vault holds
+    live credentials for it -- the mirror of native_bypass."""
+    for sibling in vault_profiles_backed_by(profile):
+        if vault_credentials_live(sibling):
+            return sibling
+    return None
+
+
+def live_alternative(command: str, profile: str) -> str | None:
+    """A profile reaching the same AWS account by the other credential path, and
+    usable right now, when the one the command named is not."""
+    if invokes_aws_vault(command) or chain_uses_aws_vault(profile):
+        return native_bypass(profile)
+    return vault_bypass(profile)
+
+
+def vault_profiles_backed_by(profile: str) -> list[str]:
+    """Profiles whose credential_process reaches this one through aws-vault."""
+    cfg = load_config()
+    names = []
+    for section in cfg.sections():
+        if not cfg.has_option(section, "credential_process"):
+            continue
+        proc = cfg.get(section, "credential_process")
+        if "aws-vault" in proc and last_profile_arg(proc) == profile:
+            names.append(section[len("profile "):] if section.startswith("profile ") else section)
+    return names
+
+
 # --- output -------------------------------------------------------------------
 
-def sso_issue(session: str) -> str:
+def sso_issue(session: str, profile: str | None = None) -> str:
     if session.startswith("legacy:"):
         login = "aws sso login"  # legacy profiles: session is implicit
         label = "the AWS SSO session"
@@ -447,12 +517,13 @@ def sso_issue(session: str) -> str:
     device_login = login.replace(
         "aws sso login", "aws sso login --use-device-code --no-browser", 1
     )
+    live = vault_bypass(profile) if profile else None
     # Which side a prompt was typed from isn't knowable to the hook, so present
     # both routes to the user and let them pick from the notification.
     return f"""* {label} is expired/missing, with no cached role credentials and no usable
   refresh token, so the command exits immediately with "Error loading SSO Token".
-  It will not hang, but it cannot succeed until the session is renewed.
-  Show the user BOTH routes below and let THEM choose -- do not pick one yourself:
+  It will not hang, but it cannot succeed until the session is renewed.{alternative_note(live)}
+  {routes_lead(live)}
     A) At the Mac -- opens a browser locally:
          {login}   (or type:  ! {login} )
     B) Remote / away from the Mac -- prints a URL + code to complete on any device:
@@ -462,11 +533,12 @@ def sso_issue(session: str) -> str:
 
 def vault_sso_issue(profile: str) -> str:
     managed = native_sso_profile(profile) or profile
+    live = native_bypass(profile)
     # aws-vault keeps its own SSO token; `aws sso login` would refresh the wrong
     # (native CLI) store, so re-login must go through aws-vault itself.
     return f"""* aws-vault has no valid cached session for "{managed}"; resolving creds would
-  run its SSO login (browser) and hang. Show the user BOTH routes and let THEM
-  choose -- do not pick one yourself:
+  run its SSO login (browser) and hang.{alternative_note(live)}
+  {routes_lead(live)}
     A) At the Mac -- opens a browser to complete the login:
          aws-vault export {managed}
     B) Remote / away from the Mac -- prints the SSO link to the terminal instead
@@ -475,22 +547,22 @@ def vault_sso_issue(profile: str) -> str:
          aws-vault export --stdout {managed}"""
 
 
-def keychain_issue(path: Path, profile: str, session: str | None) -> str:
+def keychain_issue(path: Path, profile: str) -> str:
     name = path.stem
     lines = [
         f'* The "{name}" keychain is locked; aws-vault must read it and would pop a',
         "  macOS unlock dialog -- a LOCAL-only GUI with no remote/device-code route.",
     ]
-    native = native_sso_profile(profile)
-    # Only offer the native bypass if it would actually work right now: it reads
-    # ~/.aws/sso/cache, so it's useless if that token is also stale.
-    bypass_ok = bool(native and native != profile and session and session_is_fresh(session))
+    # Offer the native profile only when it resolves right now: an unexpired
+    # token, cached role creds, or a redeemable refresh token -- not just the
+    # first of those, or a live account gets hidden behind a needless re-login.
+    native = native_bypass(profile)
 
     options = []
-    if bypass_ok:
+    if native:
         options.append([
-            "Remote -- the native SSO profile is valid right now, so skip",
-            "aws-vault entirely (file-cached, no keychain):",
+            f'Anywhere -- "{native}" reaches the same account and resolves right',
+            "now, with no aws-vault and no keychain, so re-run with it:",
             f"  --profile {native}",
         ])
     options.append([
@@ -500,13 +572,31 @@ def keychain_issue(path: Path, profile: str, session: str | None) -> str:
     ])
 
     if len(options) > 1:
-        lines.append("  Show the user BOTH choices below and let THEM choose -- do not pick one yourself:")
+        lines.append("  Take A yourself -- it needs nobody. B is the fallback, and needs the user:")
     else:
         lines.append("  Resolve it with:")
     for label, opt in zip("AB", options):
         lines.append(f"    {label}) {opt[0]}")
         lines += [f"       {line}" for line in opt[1:]]
     return "\n".join(lines)
+
+
+def alternative_note(live: str | None) -> str:
+    """The line naming a profile that is usable right now, for splicing into the
+    blurb of the path that is not. Empty when there is no such profile."""
+    if not live:
+        return ""
+    return (f'\n  "{live}" reaches the same AWS account by the other credential path and is'
+            f'\n  live right now: re-run with --profile {live} (or AWS_PROFILE={live}) and'
+            "\n  none of the below is needed -- it revives the path that failed.")
+
+
+def routes_lead(live: str | None) -> str:
+    """How to frame the A/B routes: a fallback when a live profile was named
+    above, otherwise the only way out and the user's call."""
+    if live:
+        return "Only if that also fails, show the user BOTH routes below and let THEM choose:"
+    return "Show the user BOTH routes below and let THEM choose -- do not pick one yourself:"
 
 
 def no_profile_issue() -> str:
@@ -533,15 +623,33 @@ def block_no_profile(issue: str) -> None:
     )
 
 
-def block(issues: list[str]) -> None:
+def block(issues: list[str], command: str = "") -> None:
     body = "\n".join(issues)
-    print(
+    print(f"{block_header(command)}\n\n{body}", file=sys.stderr)
+
+
+def block_header(command: str) -> str:
+    """The lede. When another profile reaches the same account and is live, that
+    is the whole answer and nobody needs interrupting; otherwise the user has to
+    choose how to revive the path the command took."""
+    profile = target_profile(command) if command else None
+    live = live_alternative(command, profile) if profile else None
+    if live:
+        return (
+            f"BLOCKED: --profile {profile} cannot resolve credentials right now, but "
+            f"--profile {live} reaches the SAME AWS account by the other credential "
+            f"path and is live. Re-run the original command with --profile {live} (or "
+            f"AWS_PROFILE={live}) -- do not ask the user, and do not retry {profile}. "
+            "Only if that fails too, use the routes below, which are about reviving "
+            f"{profile} itself."
+        )
+    return (
         "BLOCKED: this command cannot resolve AWS credentials -- it would hang on "
-        "an interactive prompt, or fail with no route to a fix. Do NOT retry, and "
-        "do NOT choose a fix yourself. Send the user a PushNotification and "
-        "present the choices in each item below for them to pick from; re-run the "
-        f"original command once they confirm it's resolved.\n\n{body}",
-        file=sys.stderr,
+        "an interactive prompt, or fail with no route to a fix. No other profile "
+        "reaches this account either. Do NOT retry, and do NOT choose a fix "
+        "yourself. Send the user a PushNotification and present the choices in "
+        "each item below for them to pick from; re-run the original command once "
+        "they confirm it's resolved."
     )
 
 
@@ -731,6 +839,7 @@ def now() -> float:
 # a live macOS keychain). Run: python3 aws-sso-preflight.py --selftest
 
 def _selftest() -> int:
+    import contextlib
     import tempfile
     import unittest
     from unittest import mock
@@ -809,13 +918,27 @@ region = us-east-1
             (self.cli_cache / f"{account}.json").write_text(json.dumps(body))
 
         def check(self, command, *, locked=False, vault_fresh=True, env=None):
+            with self.keychain_state(locked, vault_fresh, env):
+                return module.check(command)
+
+        def header(self, command, *, locked=False, vault_fresh=True, env=None):
+            """The lede printed above the blurbs, which is where a live
+            alternative profile has to be named to be acted on."""
+            with self.keychain_state(locked, vault_fresh, env):
+                return module.block_header(command)
+
+        @staticmethod
+        def keychain_state(locked, vault_fresh, env=None):
             # aws-vault session freshness comes from keychain metadata, faked here;
             # native (~/.aws/sso/cache) freshness comes from the real token file.
             epoch = (now() + 3600) if vault_fresh else None
-            with mock.patch.object(module, "keychain_locked", return_value=locked), \
-                 mock.patch.object(module, "aws_vault_session_expiry", return_value=epoch), \
-                 mock.patch.dict(os.environ, env or {}, clear=False):
-                return module.check(command)
+            stack = contextlib.ExitStack()
+            stack.enter_context(
+                mock.patch.object(module, "keychain_locked", return_value=locked))
+            stack.enter_context(
+                mock.patch.object(module, "aws_vault_session_expiry", return_value=epoch))
+            stack.enter_context(mock.patch.dict(os.environ, env or {}, clear=False))
+            return stack
 
         # --- aws-vault-backed profile: truth is aws-vault's keychain ---
 
@@ -845,13 +968,30 @@ region = us-east-1
             self.assertIn("aws-vault list", issues[0])       # unlock at the Mac
             self.assertNotIn("security ", issues[0])
 
-        def test_locked_keychain_omits_bypass_when_native_token_stale(self):
+        def test_locked_keychain_omits_bypass_when_native_is_dead_too(self):
             self.set_token(expired=True)
             issues = self.check("aws s3 ls --profile prod", locked=True)
             self.assertEqual(len(issues), 1)
             self.assertIn("keychain is locked", issues[0])
             self.assertNotIn("--profile prod-sso", issues[0])  # bypass would also hang
             self.assertIn("aws-vault list", issues[0])
+
+        def test_locked_keychain_offers_bypass_when_role_creds_cached(self):
+            # The reported failure: the OIDC token had lapsed, so the bypass was
+            # judged dead and never mentioned -- while the native profile was
+            # serving cached role credentials perfectly well.
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="111111111111")
+            issues = self.check("aws s3 ls --profile prod", locked=True)
+            self.assertEqual(len(issues), 1)  # the vault path is still blocked
+            self.assertIn("--profile prod-sso", issues[0])
+            self.assertIn("--profile prod-sso", self.header(
+                "aws s3 ls --profile prod", locked=True))
+
+        def test_locked_keychain_offers_bypass_when_token_refreshable(self):
+            self.set_token(expired=True, refreshable=True)
+            issues = self.check("aws s3 ls --profile prod", locked=True)
+            self.assertIn("--profile prod-sso", issues[0])
 
         # --- native SSO profile: truth is ~/.aws/sso/cache ---
 
@@ -904,6 +1044,39 @@ region = us-east-1
             issues = self.check("aws s3 ls --profile prod", vault_fresh=False)
             self.assertEqual(len(issues), 1)
             self.assertIn("aws-vault has no valid cached session", issues[0])
+
+        # --- naming the path that still works ---
+
+        def test_stale_vault_session_names_live_native_profile(self):
+            self.set_token(expired=False)
+            issues = self.check("aws s3 ls --profile prod", vault_fresh=False)
+            self.assertIn("--profile prod-sso", issues[0])
+            self.assertIn("aws-vault export prod-sso", issues[0])  # still the A/B fix
+
+        def test_dead_native_profile_names_live_vault_profile(self):
+            # The mirror image: the SSO token is gone but aws-vault still holds a
+            # session, so `--profile prod` reaches the account.
+            self.set_token(expired=True)
+            issues = self.check("aws s3 ls --profile prod-sso", vault_fresh=True)
+            self.assertEqual(len(issues), 1)
+            self.assertIn("--profile prod (or AWS_PROFILE=prod)", issues[0])
+            self.assertIn("--use-device-code", issues[0])  # still the A/B fix
+            self.assertIn("AWS_PROFILE=prod)", self.header("aws s3 ls --profile prod-sso"))
+
+        def test_header_sends_the_user_to_the_alternative_not_a_relogin(self):
+            self.set_token(expired=True)
+            self.set_cached_role_creds(account="111111111111")
+            header = self.header("aws s3 ls --profile prod", locked=True)
+            self.assertTrue(header.startswith("BLOCKED:"))
+            self.assertIn("AWS_PROFILE=prod-sso", header)
+            self.assertNotIn("PushNotification", header)  # nobody needs interrupting
+
+        def test_header_asks_the_user_when_no_path_is_live(self):
+            self.set_token(expired=True)
+            header = self.header("aws s3 ls --profile prod", locked=True, vault_fresh=False)
+            self.assertTrue(header.startswith("BLOCKED:"))
+            self.assertIn("PushNotification", header)
+            self.assertNotIn("prod-sso", header)
 
         # --- gating ---
 

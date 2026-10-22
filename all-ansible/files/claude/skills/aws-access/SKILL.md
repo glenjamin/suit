@@ -25,11 +25,17 @@ says "AWS is fixed" may have unlocked only one of them, which is why `--profile
 staging` can work while `--profile staging-sso` fails with `Token has expired and
 refresh failed`, or the reverse.
 
-**Diagnose before asking the user twice.** Read `~/.aws/sso/cache/*.json` — a
-plain file read that resolves no credentials — and look for an entry containing an
-`accessToken` with an unexpired `expiresAt`. No live token means native SSO is
-dead, so try the plain profiles; if `sts get-caller-identity` on one of those
-works, get on with the task. Only go back to the user when both paths are shut.
+**An expired SSO token does not mean native SSO is dead.** The `expiresAt` in
+`~/.aws/sso/cache/*.json` is the OIDC token's, and two things outlive it: the role
+credentials in `~/.aws/cli/cache/*.json`, which carry their own `Expiration` (the
+permission set's session duration, far longer than the token's hour), and a
+`refreshToken`, which the CLI redeems silently while its `registrationExpiresAt`
+holds. Either one makes `--profile prod-sso` work with the token long gone.
+
+**Diagnose before asking the user twice.** Those are plain file reads that resolve
+no credentials, and the hook already does them for you — when it blocks, it names
+any profile that reaches the same account and is live. Take that profile and get
+on with the task. Only go back to the user when both paths are shut.
 
 ## Run outside the sandbox
 
@@ -52,10 +58,10 @@ would hang or dead-end:
 
 **When it blocks, follow its instructions exactly:**
 
-1. Do **not** retry the command, and do **not** pick a resolution yourself.
-2. Check whether the *other* credential path is open first (see above) — the hook
-   reports on the path your command took, and the other one may be usable, in
-   which case there's nothing to ask about.
+1. Do **not** retry the same command, and do **not** pick a resolution yourself.
+2. If the block names a live profile for the same account, just re-run with that
+   one — the hook checks the other credential path for you, and saying so means
+   it is usable right now. There is nothing to ask the user about.
 3. Otherwise send the user a `PushNotification`, and present **both** routes the
    hook prints for them to choose between:
    - **A) At the Mac** — a command that opens a browser to complete SSO login.
