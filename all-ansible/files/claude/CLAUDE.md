@@ -9,7 +9,7 @@
 - Never use `/` in git branch names, use `-` instead — tooling that interpolates the branch name breaks on the slash
 - Always branch worktrees off the fetched upstream HEAD (`git fetch origin`, then `origin/master`), never the local checkout — local clones are often behind, and stale docs or tooling then read as missing
 - Amend or squash fixups into the relevant commit; don't stack "fix" commits
-- Don't git push or open PRs, I'll do that. When I do explicitly make you open a PR, don't hard-wrap the description — one line per paragraph, let it soft-wrap.
+- When writing a PR, don't hard-wrap the description — one line per paragraph, let it soft-wrap.
 - Same in markdown files: one line per paragraph and per list item, soft-wrapped, never hard-wrapped to a column
 - In chat replies, write PR/issue mentions as clickable markdown links (`[#123](url)`, `[repo#123](url)`), never a bare `#123`. On GitHub (PR descriptions, comments) use the bare `#123`/`owner/repo#123` form instead — GitHub auto-links those.
 - Don't reply to github review comments
