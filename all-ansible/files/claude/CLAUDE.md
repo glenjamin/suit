@@ -6,7 +6,7 @@
 
 - Commit messages should have a headline briefly saying what changed. If it's not obvious, the body should go on to explain why. The details live in the diff (max 80 char lines)
 - Never commit directly to master, always make a branch first
-- Never use `/` in git branch names, use `-` instead — tooling that interpolates the branch name breaks on the slash (tarball filenames become paths into non-existent dirs, and app's hot-branch validation silently rejects the branch and serves production assets)
+- Never use `/` in git branch names, use `-` instead — tooling that interpolates the branch name breaks on the slash
 - Always branch worktrees off the fetched upstream HEAD (`git fetch origin`, then `origin/master`), never the local checkout — local clones are often behind, and stale docs or tooling then read as missing
 - Amend or squash fixups into the relevant commit; don't stack "fix" commits
 - Don't git push or open PRs, I'll do that. When I do explicitly make you open a PR, don't hard-wrap the description — one line per paragraph, let it soft-wrap.
