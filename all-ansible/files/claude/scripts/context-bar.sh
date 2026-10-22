@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Tests: python3 context_bar_test.py (alongside this script)
+
 # Color theme: gray, orange, blue, teal, green, lavender, rose, gold, slate, cyan
 # Preview colors with: bash scripts/color-preview.sh
 COLOR="orange"
@@ -84,7 +86,11 @@ pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
 
 # Get context window size from JSON
 max_context=$(echo "$input" | jq -r '.context_window.context_window_size // 200000')
-max_k=$((max_context / 1000))
+if (( max_context >= 1000000 && max_context % 1000000 == 0 )); then
+    max_label="$((max_context / 1000000))M"
+else
+    max_label="$((max_context / 1000))k"
+fi
 
 # Calculate context bar from transcript
 bar_width=10
@@ -102,11 +108,40 @@ for ((i=0; i<bar_width; i++)); do
     fi
 done
 
-ctx="${bar} ${C_GRAY}${pct_prefix}${pct}% of ${max_k}k tokens"
+ctx="${bar} ${C_GRAY}${pct_prefix}${pct}% of ${max_label}"
+
+# Prompt cache expiry, estimated from the last API call in the transcript and
+# the TTL it last wrote with. Only shown past 200k tokens of context, once
+# expiry is close or past.
+cache_segment=""
+transcript=$(echo "$input" | jq -r '.transcript_path // empty')
+used_tokens=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
+if [[ -f "$transcript" ]] && ((used_tokens > 200000)); then
+    read -r ts ttl < <(tail -200 "$transcript" | jq -rs '
+        [.[] | select(.type == "assistant" and .message.usage != null)
+             | .message.usage as $u
+             | select(($u.cache_read_input_tokens // 0) + ($u.cache_creation_input_tokens // 0) > 0)
+             | {ts: .timestamp, h1: ($u.cache_creation.ephemeral_1h_input_tokens // 0),
+                m5: ($u.cache_creation.ephemeral_5m_input_tokens // 0)}]
+        | select(length > 0)
+        | ([.[] | select(.h1 + .m5 > 0)] | last) as $w
+        | [last.ts, (if ($w.h1 // 0) > 0 then 3600 else 300 end)] | @tsv' 2>/dev/null)
+    if [[ -n "$ts" ]]; then
+        last=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "${ts%.*}" +%s 2>/dev/null)
+        if [[ -n "$last" ]]; then
+            left=$((last + ttl - $(date +%s)))
+            if ((left < 60)); then
+                cache_segment=" ${C_GRAY}uncached"
+            elif ((left < 900)); then
+                cache_segment=" ${C_GRAY}exp $((left / 60))m"
+            fi
+        fi
+    fi
+fi
 
 # Build output: Model+effort | Dir | Branch* | Context
 output="${C_ACCENT}${model}${effort_segment}${C_GRAY} | ${dir}"
 output+="${git_segment}"
-output+="${C_GRAY} | ${ctx}${C_RESET}"
+output+="${C_GRAY} | ${ctx}${cache_segment}${C_RESET}"
 
 printf '%b\n' "$output"

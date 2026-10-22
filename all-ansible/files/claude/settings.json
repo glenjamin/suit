@@ -184,7 +184,8 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/scripts/context-bar.sh"
+    "command": "~/.claude/scripts/context-bar.sh",
+    "refreshInterval": 30
   },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
