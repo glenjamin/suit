@@ -12,6 +12,9 @@ ff = false
 renames = copy
 algorithm = histogram
 
+[diff "gzip"]
+	textconv = gzip -dc
+
 [log]
 date = relative
 decorate = short
@@ -62,6 +65,7 @@ user = glenjamin
 
 [core]
 excludesfile = ~/.gitignore_global
+attributesFile = ~/.gitattributes_global
 	trustctime = false
 pager=delta
 	editor = vim

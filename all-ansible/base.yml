@@ -35,6 +35,11 @@
       src: "{{playbook_dir}}/files/gitignore"
       path: "{{ ansible_user_dir }}/.gitignore_global"
       state: link
+  - name: create global gitattributes
+    file:
+      src: "{{playbook_dir}}/files/gitattributes"
+      path: "{{ ansible_user_dir }}/.gitattributes_global"
+      state: link
 
   - name: make ssh dir
     file:
