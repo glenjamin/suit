@@ -221,5 +221,10 @@
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "askUserQuestionTimeout": "5m",
+  "model": "opus",
+  "outputStyle": "Concise",
+  "skipWorkflowUsageWarning": true,
+  "verbose": false
 }
