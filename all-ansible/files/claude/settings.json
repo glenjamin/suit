@@ -1,7 +1,9 @@
 {
-  "// env": "AWS_VAULT_PROMPT=terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
+  "// env AWS_VAULT_PROMPT": "terminal turns any residual aws-vault GUI dialog into a terminal prompt that fails fast with no TTY, instead of blocking on a dialog.",
+  "// env CLAUDE_CODE_DISABLE_FILE_MENTIONS": "makes @ mentions pass the path for Claude to read rather than inlining the file.",
   "env": {
-    "AWS_VAULT_PROMPT": "terminal"
+    "AWS_VAULT_PROMPT": "terminal",
+    "CLAUDE_CODE_DISABLE_FILE_MENTIONS": "1"
   },
   "attribution": {
     "sessionUrl": false
