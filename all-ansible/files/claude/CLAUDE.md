@@ -29,6 +29,11 @@
 - Put temp files in the session scratchpad
 - `mise` is used to manage ruby/go/node versions
 
+## When writing Go
+
+- Use `any` over `interface{}`
+- use `t.Context()` when a test needs a Context
+
 ## When writing TypeScript
 
 - Refine types rather than casting with `as`
