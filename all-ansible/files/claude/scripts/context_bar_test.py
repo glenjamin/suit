@@ -106,10 +106,11 @@ class ContextBarTest(unittest.TestCase):
 
 
 class CacheExpiryTest(unittest.TestCase):
-    def test_hidden_while_long_lived_cache_has_plenty_left(self):
-        self.assertEqual(cache_label([assistant(ago=120, ttl="1h")]), "")
+    def test_reads_as_warm_while_over_thirty_minutes_left(self):
+        self.assertEqual(cache_label([assistant(ago=120, ttl="1h")]), "warm")
 
-    def test_shows_minutes_left_once_under_fifteen(self):
+    def test_shows_minutes_left_once_under_thirty(self):
+        self.assertEqual(cache_label([assistant(ago=30 * 60 + 30, ttl="1h")]), "exp 29m")
         self.assertEqual(cache_label([assistant(ago=50 * 60 + 30, ttl="1h")]), "exp 9m")
 
     def test_rounds_minutes_down(self):
@@ -124,7 +125,7 @@ class CacheExpiryTest(unittest.TestCase):
 
     def test_cache_reads_keep_the_ttl_of_the_last_write(self):
         # Under a 5m TTL the recent read would leave 3m; under 1h it leaves 58m
-        self.assertEqual(cache_label([assistant(ago=50 * 60, ttl="1h"), assistant(ago=120, ttl=None)]), "")
+        self.assertEqual(cache_label([assistant(ago=50 * 60, ttl="1h"), assistant(ago=120, ttl=None)]), "warm")
 
     def test_ignores_entries_that_never_touched_the_cache(self):
         self.assertEqual(cache_label([
