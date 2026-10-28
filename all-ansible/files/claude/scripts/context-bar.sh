@@ -111,12 +111,12 @@ done
 ctx="${bar} ${C_GRAY}${pct_prefix}${pct}% of ${max_label}"
 
 # Prompt cache expiry, estimated from the last API call in the transcript and
-# the TTL it last wrote with. Only shown past 200k tokens of context, once
+# the TTL it last wrote with. Only shown past 100k tokens of context, once
 # expiry is close or past.
 cache_segment=""
 transcript=$(echo "$input" | jq -r '.transcript_path // empty')
 used_tokens=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
-if [[ -f "$transcript" ]] && ((used_tokens > 200000)); then
+if [[ -f "$transcript" ]] && ((used_tokens > 100000)); then
     read -r ts ttl < <(tail -200 "$transcript" | jq -rs '
         [.[] | select(.type == "assistant" and .message.usage != null)
              | .message.usage as $u

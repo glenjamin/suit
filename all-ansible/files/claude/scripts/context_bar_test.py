@@ -136,10 +136,10 @@ class CacheExpiryTest(unittest.TestCase):
     def test_no_cache_segment_without_a_transcript(self):
         self.assertEqual(cache_label(None), "")
 
-    def test_hidden_until_context_passes_200k_tokens(self):
+    def test_hidden_until_context_passes_100k_tokens(self):
         expired = [assistant(ago=600, ttl="5m")]
-        self.assertEqual(cache_label(expired, tokens=200_000), "")
-        self.assertEqual(cache_label(expired, tokens=200_001), "uncached")
+        self.assertEqual(cache_label(expired, tokens=100_000), "")
+        self.assertEqual(cache_label(expired, tokens=100_001), "uncached")
 
     def test_no_cache_segment_without_api_calls(self):
         self.assertEqual(cache_label([{"type": "user", "timestamp": iso(ago=5), "message": {"content": "hi"}}]), "")
